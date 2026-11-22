@@ -21,12 +21,30 @@ tags: [task]
 ## Entendimento
 <Resumo em 1 minuto do teach-back (problema, onde encaixa, o que muda, caminho descartado).>
 
-<Detalhe para o agente e para consulta: fluxo com arquivos, rotas e models reais; cada componente e por que existe; o que o historico explica; itens "a validar".>
+<Detalhe para o agente e para consulta: fluxo com arquivos, rotas e models reais; cada componente e por que existe; o que o historico explica; itens "a validar". Regra ou valor do Contrato: cite o item (`ver C3`), nao repita.>
+
+### Prova com dado real
+<um dos tres:
+- **Fonte** · **Consulta** (em palavras, sem dado pessoal) · **Resultado** (so agregado: contagem, minimo, mediana, maximo) · **Efeito no plano** (o que mudou, ou "nada");
+- `nao se aplica - <motivo>`;
+- `prova indisponivel - <motivo>`.>
 
 ## Definicao de pronto
-<formato do arquivo de tipo>
-- [ ] Quando ..., entao ...
-- [ ] Quando ..., entao ...
+<frases `quando ..., entao ...`, uma por teste; ajuste do arquivo de tipo. Categoria sem uso: `nao se aplica - <motivo>`.>
+- **Feliz:**
+  - [ ] Quando ..., entao ...
+- **Erro esperado:**
+  - [ ] Quando ..., entao ...
+- **Repeticao:**
+  - [ ] Quando ..., entao ...
+- **Limite:**
+  - [ ] Quando ..., entao ...
+- **Acesso indevido:**
+  - [ ] Quando ..., entao ...
+
+## Contrato
+<o que outra parte do sistema, o banco ou o usuario enxerga e fica fixo. Mudar = mudar o QUE (o agente para). Fora daqui, tudo e sugestao. Ate 5 sub-regras por item.>
+- **C1.** ...
 
 ## Decisoes
 - <decisao> - <motivo em uma linha>
@@ -46,4 +64,9 @@ tags: [task]
 <preenchido pelo /task-design>
 
 ## Registro de etapas
-- plan: concluido em <AAAA-MM-DD>. Skips: <lista de `skip: motivo`, ou "nenhum">
+<uma linha por estagio, neste formato exato (separador " · "), para leitura por script. Ao rodar de novo, o estagio reescreve a propria linha.>
+- plan: concluido em <AAAA-MM-DD> · tipo <tipo> · tamanho <tamanho> · prova <feita|nao se aplica|indisponivel> · skips: <lista ou nenhum>
+- design: concluido em <AAAA-MM-DD> · prototipos <N> · etapas <N> · skips: <lista ou nenhum>
+- build: concluido em <AAAA-MM-DD> · modelo <modelo> · rodadas <N> · desvios <N> · falhas esperadas <N> · skips: <lista ou nenhum>
+- verify: concluido em <AAAA-MM-DD> · modo <leve|completo> · rodadas <N> · bloqueantes <N> · atencao <N> · refutados <N> · skips: <lista ou nenhum>
+- ship: concluido em <AAAA-MM-DD> · ci <verde|falhou|sem ci> · licoes <N> · skips: <lista ou nenhum>

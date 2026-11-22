@@ -22,12 +22,14 @@ Voce implementa a task <ID> - <nome curto>.
 4. Regras do tipo <tipo>: <linha da tabela "Por tipo" do SKILL.md>
 
 ## Desvios
-- Nao muda forma, interface nem plano de testes: faca e registre no relatorio.
-- Muda forma, interface ou plano de testes: escolha a opcao mais conservadora, faca, registre com o motivo e marque ATENCAO.
+- Fora do Contrato (forma, nomes, arquivos, divisao das etapas): decida, faca e registre no relatorio com o motivo.
+- Muda um item do Contrato (rota, formato, status, campo gravado, permissao, log): NAO faca. Pare a etapa e reporte.
+- Teste planejado impraticavel: use a verificacao executavel mais proxima, registre e marque ATENCAO.
+- Bug real fora do escopo: falha esperada, conforme `referencias/tdd.md`. Registre no relatorio.
 - Teste do plano parece errado: NAO altere. Pare a etapa e reporte.
 
 ## Pare e reporte se
-- cumprir um criterio exige mudar escopo ou produto;
+- cumprir uma frase exige mudar um item do Contrato, o escopo ou o produto;
 - o passo nao tem volta (dado real, branch protegida, apagar dados);
 - ha ambiguidade de seguranca ou permissao;
 - o mesmo erro persiste apos 2 tentativas.
@@ -38,6 +40,6 @@ Por etapa:
 - Commit: <hash>
 - Testes: <nome> | vermelho: <trecho da saida> | verde: <trecho da saida>
 - Sem teste automatizado: <o que e por que>
-- Desvios: <lista ou "nenhum">; ATENCAO: <lista ou "nenhum">
+- Desvios: <lista ou "nenhum">; falhas esperadas: <lista ou "nenhuma">; ATENCAO: <lista ou "nenhum">
 Final: comando e saida da suite completa, do lint e do build.
 ```

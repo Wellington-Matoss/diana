@@ -1,5 +1,7 @@
 # TDD: o ciclo
 
+O titulo de cada teste e a **frase da Definicao de pronto**, igual: `quando ..., entao ...`.
+
 Para **cada teste** do plano de testes da etapa, nesta ordem:
 
 1. **Escreva um teste.** So um. Ele descreve o comportamento do criterio de pronto. O valor esperado vem da spec ou de um exemplo conhecido, nunca do codigo.
@@ -37,6 +39,16 @@ So na **fronteira do sistema**:
 **Banco:** use o banco de teste do projeto, conforme o guia de testes do projeto. Nao faca mock do banco se o projeto tem banco de teste.
 
 **Nunca** faca mock do proprio codigo (services, utils, modulos internos).
+
+## Bug real fora do escopo: falha esperada
+
+Se um teste (novo ou existente) falha por um **bug real que nao e desta task**:
+
+- **Nao corrija** (o escopo cresceria) e **nao altere nem pule** o teste.
+- Marque o teste como **falha esperada** no recurso do framework (ex.: `test.fails` no Vitest, `xfail` no pytest), com um comentario apontando a linha nos debitos do projeto.
+- Acrescente a linha na lista de debitos do projeto (secao de bugs conhecidos, se houver), com link para a task.
+- A falha esperada passa enquanto o bug existe e **quebra quando alguem o corrige**: quem corrigir troca por teste normal e apaga a linha do debito.
+- Bug dentro do escopo da task: corrija na task.
 
 ## Quando o teste e impraticavel
 

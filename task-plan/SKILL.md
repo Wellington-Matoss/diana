@@ -20,6 +20,7 @@ Demanda -> 1 Receber -> 2 Classificar -> 3 Investigar -> 4 Explicar -> 5 Entrevi
 - **Nao avance com pergunta bloqueante aberta.** Duvida nao bloqueante vai para "Perguntas em aberto" ou "Fora do escopo".
 - **Nao escreva codigo de producao.** Codigo de investigacao (reproducao de bug, script de medicao) e permitido. Ele fica em pasta descartavel e nao entra no commit, exceto quando o Design decidir reaproveitar.
 - **Nenhum passo some em silencio.** Passo que nao se aplica fica na lista como `skip: <motivo>`.
+- **Um lugar por fato.** Cada regra ou valor que muda comportamento visivel (limite, unidade, formato, mensagem, quem pode o que) fica por extenso **so no Contrato**. O resto da nota cita o item (`ver C3`). Dois lugares com o mesmo fato acabam com valores diferentes.
 
 ## Skills e contexto de apoio
 
@@ -69,6 +70,7 @@ Use subagentes leves, somente leitura. Nao gaste modelo forte em leitura.
 - **Por que e assim:** um subagente le o historico (commits e PRs que criaram e alteraram a area). Ele cita o que os autores escreveram, marca o que e inferencia e diz o que o historico nao responde. Pule (`skip: <motivo>`) em area nova ou trivial.
 - **Fatos externos** (API de terceiros, biblioteca, norma): pesquise em fonte primaria e salve as conclusoes com citacao na nota da task.
 - **Glossario:** leia o glossario do projeto e use os termos dele.
+- **Prova com dado real (condicional):** se a task cria ou muda regra, metrica, filtro ou formato sobre dado que ja existe, teste a premissa contra o dado antes da entrevista. Um subagente de contexto limpo roda a consulta **so em leitura** e devolve **so numero agregado** (contagem, minimo, mediana, maximo; com menos de 5 casos, so a contagem). Nunca registro individual nem dado pessoal. Nunca producao, a menos que o contexto do projeto defina uma fonte autorizada. Prova que contradiz a premissa muda a proposta antes de chegar ao usuario. Sem regra sobre dado existente: `nao se aplica - <motivo>`. Sem fonte so leitura disponivel: `prova indisponivel - <motivo>`.
 - Execute os passos de investigacao do arquivo de tipo.
 
 ## 4. Explicar (como e hoje)
@@ -96,7 +98,16 @@ Mapeie as decisoes como uma arvore: cada decisao abre as decisoes que dependem d
 ```
 
 - Escreva cada pergunta de forma que "sim" aceite a recomendacao. O usuario pode responder "1 sim, 2 sim, 3 nao: X".
-- **A primeira rodada sempre inclui:** classificacao (tipo e tamanho) e definicao de pronto (o formato vem do arquivo de tipo).
+- **A primeira rodada sempre inclui:** classificacao (tipo e tamanho), definicao de pronto e Contrato.
+  - **Definicao de pronto:** frases `quando ..., entao ...` nas **5 categorias**, com o ajuste do arquivo de tipo:
+    - **feliz:** o caminho normal;
+    - **erro esperado:** entrada invalida, recusa de negocio, falta de permissao;
+    - **repeticao:** clique duplo, pedido duplicado, duas requisicoes ao mesmo tempo;
+    - **limite:** zero, negativo, vazio, vencido, maximo;
+    - **acesso indevido:** usuario A lendo ou alterando dado de B.
+
+    Categoria que nao se aplica: `nao se aplica - <motivo>`. Cada frase vira um teste com o mesmo titulo.
+  - **Contrato (`C1`, `C2`...):** o que outra parte do sistema, o banco ou o usuario enxerga e fica **fixo**: rota e metodo, formato de entrada e resposta, codigo de status e de erro, campo gravado, permissao por perfil, log ou auditoria gerado, texto de tela que importa. Nao repete as frases. Ate 5 sub-regras por item; mais que isso, quebre em outro item. **Tudo o que nao esta no Contrato e sugestao:** o Design e o Build podem mudar sem perguntar. Mudar o Contrato e mudar o QUE.
 - Se uma pergunta precisa de um fato, mande um subagente buscar e continue com as outras perguntas. So as perguntas que dependem desse fato esperam.
 - **Termos do dominio:** se o usuario usar termo vago ou em conflito com o glossario, aponte na hora e proponha o termo canonico. Se o codigo contradiz o que o usuario disse, mostre a contradicao.
 - **Decisao que e de outra pessoa** (gestor, cliente, outro time): nao decida na sessao. Gere um questionario com `templates/questionario.md`, salve na nota, marque `status: aguardando` e pare. A task continua quando a resposta chegar.
@@ -118,11 +129,12 @@ Objetivo: o usuario conseguir explicar a task sem IA. Bloqueante, mas leve.
 ## 7. Escrever a spec
 
 1. Sincronize o vault. Defina o ID (prefixo do projeto + proximo numero livre, olhando tasks pendentes e concluidas).
-2. Crie a nota a partir de `templates/spec.md` na pasta de tasks do vault.
+2. Crie a nota a partir de `templates/spec.md` na pasta de tasks do vault. Antes de salvar, confira o "um lugar por fato": regra ou valor que aparece com valores diferentes em dois lugares e corrigido; fora do Contrato, so `ver Cn`.
 3. **Glossario:** acrescente ou corrija os termos resolvidos na entrevista. O glossario tem so termos, sem detalhe de implementacao.
-4. **Decisao de arquitetura:** registre na documentacao de arquitetura do vault so quando as tres condicoes forem verdadeiras: (a) dificil de reverter, (b) surpreendente sem contexto, (c) resultado de um trade-off real. Senao, a decisao fica so na nota da task.
+4. **Decisao de arquitetura:** registre na documentacao de arquitetura do vault so quando as tres condicoes forem verdadeiras: (a) dificil de reverter, (b) surpreendente sem contexto, (c) resultado de um trade-off real, e **com o OK do usuario** (decisao nova so nasce com OK). Senao, a decisao fica so na nota da task.
 5. **Desenho de fluxo (opcional):** pergunte se o usuario quer. Se sim, use a skill `excalidraw` e salve na pasta de desenhos do projeto.
-6. Sincronize o vault (commit e push das notas).
+6. Escreva a linha `plan` no "Registro de etapas", no formato do template.
+7. Sincronize o vault (commit e push das notas).
 
 ## 8. Dividir (so epico e mapa)
 
@@ -132,7 +144,8 @@ Siga o arquivo de tamanho. Para tamanho `task`: `skip: task unica`.
 
 Confira antes de encerrar:
 
-- [ ] Definicao de pronto escrita no formato do tipo e aprovada.
+- [ ] Definicao de pronto nas 5 categorias (ou `nao se aplica - motivo`) e Contrato aprovados.
+- [ ] Prova com dado real feita, ou registrada como `nao se aplica` / `indisponivel` com motivo.
 - [ ] Nenhuma pergunta bloqueante aberta.
 - [ ] Teach-back confirmado.
 - [ ] Spec salva e vault sincronizado.

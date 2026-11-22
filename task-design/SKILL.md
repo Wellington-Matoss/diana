@@ -18,6 +18,7 @@ Nota (plan concluido) -> 1 Ler -> 2 Prototipar -> 3 Nomear -> 4 Dar forma -> 5 P
 ## Principios
 
 - **O Plan decidiu O QUE. O Design decide COMO.** Se o Design mostrar que o Plan esta errado (criterio impossivel, escopo grande demais, pergunta de produto que ninguem decidiu), pare e volte ao `/task-plan`. Nao corrija o Plan em silencio.
+- **O Contrato e fixo.** A forma do codigo pode ser qualquer uma que cumpra o Contrato e as frases. Se a melhor forma exige mudar um item do Contrato, isso e mudar o QUE: volte ao `/task-plan`.
 - **Os fatos sao seus. As decisoes sao do usuario.** Mesma regra do Plan.
 - **Nao escreva codigo de producao.** Prototipo e codigo descartavel, em branch descartavel. Trecho curto de tipo ou assinatura na nota e permitido quando descreve a decisao melhor que texto.
 - **Siga o precedente.** Se o projeto ja resolve algo parecido, use o mesmo padrao, a menos que haja motivo registrado para nao usar.
@@ -92,7 +93,7 @@ Leia `referencias/vocabulario.md`.
 ## 5. Plano de testes
 
 1. **Escolha os seams de teste:** prefira os que ja existem; teste no nivel mais alto possivel; quanto menos seams, melhor (o ideal e um).
-2. **Um teste por criterio de pronto.** Para cada criterio: nome do teste, nivel (unidade, integracao, e2e), seam, dado de entrada.
+2. **Um teste por frase da Definicao de pronto, com o titulo igual a frase.** Para cada frase: nivel (unidade, integracao, e2e), seam, dado de entrada. Frase `nao se aplica` nao gera teste. Item do Contrato que nenhuma frase cobre (ex.: log gerado, campo gravado): acrescente a verificacao a frase mais proxima ou um teste proprio.
 3. **Teste comportamento, nao implementacao:** o teste verifica o que o chamador observa. Ele quebra quando o comportamento quebra e continua passando quando so o interno muda.
 4. **Comprovacao no app:** para cada criterio, uma linha de como o Verify vai comprovar no aplicativo real (tela, acao, resultado esperado).
 5. Ajuste por tipo:
@@ -117,16 +118,17 @@ Leia `referencias/vocabulario.md`.
 ## 7. Escrever e aprovar
 
 1. Preencha a secao `## Design` da nota com `templates/design.md`.
-2. **Decisao de arquitetura:** registre na documentacao de arquitetura do vault so se for dificil de reverter, surpreendente sem contexto e resultado de um trade-off real. Senao, fica so na nota.
+2. **Decisao de arquitetura:** so se for dificil de reverter, surpreendente sem contexto e resultado de um trade-off real. Ela entra na aprovacao unica (passo 3) e so e registrada no vault com o OK do usuario. Senao, fica so na nota.
 3. **Aprovacao unica.** Numa mensagem so, mostre:
    - forma escolhida e forma descartada (2-4 linhas);
    - tabela do plano de testes;
    - lista de etapas;
-   - prototipos e escolhas (se houver).
+   - prototipos e escolhas (se houver);
+   - decisao de arquitetura proposta (se houver).
 
    Pergunte: "Aprova forma, testes e etapas?". Ajuste ate aprovar.
 
-4. Atualize o frontmatter: `estagio: design`, `atualizado`. No "Registro de etapas": `design: concluido em <data>. Skips: <lista>`.
+4. Atualize o frontmatter: `estagio: design`, `atualizado`. Escreva a linha `design` no "Registro de etapas", no formato do template da spec.
 5. Sincronize o vault.
 
 ## Escala

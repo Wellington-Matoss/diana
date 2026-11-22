@@ -22,6 +22,7 @@ Nota (design aprovado) -> 1 Preparar -> 2 Modelo -> 3 Delegar -> 4 Conferir -> 5
 - **Evidencia, nao relato.** "Os testes passaram" so vale com o comando e a saida. O lider roda de novo.
 - **Teste primeiro, um teste por vez.** Ver `referencias/tdd.md`.
 - **Teste do plano nao muda para passar.** Nem o esperado, nem a assercao.
+- **O Contrato e a linha.** Fora do Contrato (forma, nomes, divisao das etapas), decida e registre como desvio. Mudar um item do Contrato e mudar o QUE: caso 1 de "Quando parar".
 - **Commit local por etapa. Nunca push no Build.** O push e do `/task-ship`.
 - **Nunca trabalhe em `main`, `develop`, `homologacao`** ou outra branch protegida do projeto.
 - **Nenhum passo some em silencio:** `skip: <motivo>`.
@@ -30,7 +31,7 @@ Nota (design aprovado) -> 1 Preparar -> 2 Modelo -> 3 Delegar -> 4 Conferir -> 5
 
 Pare, registre na nota com `status: bloqueada` e o motivo, sincronize o vault e informe o usuario **somente** se:
 
-1. cumprir um criterio de pronto exige mudar **escopo ou produto** (o QUE);
+1. cumprir uma frase da Definicao de pronto exige mudar **um item do Contrato, o escopo ou o produto** (o QUE);
 2. o proximo passo **nao tem volta**: alterar dado real, escrever em branch protegida, force push, apagar dados;
 3. ha **ambiguidade de seguranca ou permissao** (autenticacao, autorizacao, segredo, dado de cliente);
 4. **bloqueio tecnico** persiste apos 2 rodadas de correcao (ambiente, credencial, dependencia quebrada).
@@ -84,7 +85,8 @@ Nao aceite o relatorio sem conferir:
    - [ ] existe o commit da etapa;
    - [ ] os testes planejados para a etapa existem e testam o criterio (nao detalhe interno);
    - [ ] o relatorio mostra o vermelho **pelo motivo certo** antes do verde;
-   - [ ] arquivos alterados estao dentro do que a etapa previa (ou o desvio esta registrado).
+   - [ ] arquivos alterados estao dentro do que a etapa previa (ou o desvio esta registrado);
+   - [ ] nenhum item do Contrato mudou (rota, formato, status, campo gravado, permissao, log).
 2. **Testes do plano intactos:** compare os testes com o plano. Assercao enfraquecida, esperado trocado, teste pulado (`skip`, `only`, `todo`) ou teste do plano removido = reprovado.
 3. **Rode voce mesmo:** suite completa, lint e build. Compare com a linha de base. Apontamento novo de lint nos arquivos tocados = reprovado. Apontamento que pode ser decisao de dominio: escolha a opcao conservadora, registre e marque "Atencao".
 4. **Reprovado:** dispare um **subagente novo** com o brief original + a lista objetiva do que falhou (nao continue o subagente anterior). Maximo de 2 rodadas; na segunda, aplique a regra de modelo. Persistiu: caso 4 de "Quando parar".
@@ -98,10 +100,11 @@ Limpeza nao e refatoracao: nao mude estrutura que o Design nao previu.
 ## 6. Registrar e seguir
 
 1. Preencha a secao `## Execucao` da nota com `templates/execucao.md`.
-2. Desvios: registre em "Desvios aceitos" com `pendente de aprovacao no PR`. Desvio que mudou forma, interface ou plano de testes tambem entra na lista "Atencao".
-3. Frontmatter: `estagio: build`, `atualizado`. "Registro de etapas": `build: concluido em <data>. Modelo: <modelo>. Skips: <lista>`.
-4. Sincronize o vault.
-5. **Siga sozinho:** invoque `/task-verify <nota>`. Nao espere o usuario.
+2. Desvios: registre na secao "Desvios" do Design, com o motivo. Entra tambem nos candidatos a "Atencao" so o desvio que deixou uma frase **sem teste automatizado** (teste impraticavel). Os demais ficam so na nota.
+3. Falha esperada: cada uma com a linha correspondente na lista de debitos (ver `referencias/tdd.md`) e nos candidatos a "Atencao".
+4. Frontmatter: `estagio: build`, `atualizado`. Escreva a linha `build` no "Registro de etapas", no formato do template da spec.
+5. Sincronize o vault.
+6. **Siga sozinho:** invoque `/task-verify <nota>`. Nao espere o usuario.
 
 ## Por tipo
 

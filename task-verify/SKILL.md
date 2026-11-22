@@ -44,7 +44,7 @@ Leia da memoria do agente e do `CLAUDE.md`: comandos de teste e lint; branch bas
 
 ## 1. Preparar
 
-1. Leia a nota: Definicao de pronto, Decisoes, Design (inclusive "Comprovacao no app"), Execucao, Desvios.
+1. Leia a nota: Definicao de pronto, Contrato, Decisoes, Design (inclusive "Comprovacao no app" e "Desvios"), Execucao.
 2. Pegue o diff contra a branch base **uma vez** (`git diff <base>...HEAD`) e a lista de commits. Passe esse diff aos revisores; eles nao rodam git de novo.
 3. Rode a suite de testes e o lint. Lint: erro nos arquivos do diff, e aviso **so em linha que o diff alterou**. Teste vermelho ou lint novo = **bloqueante** (passo 5). Nao siga para o passo 2 com teste vermelho.
 
@@ -82,8 +82,8 @@ Dispare os revisores **ao mesmo tempo**, cada um em contexto limpo, com os brief
 
 | Categoria                   | O que entra                                                                                                                                                                                                                                                                    | Destino                                    |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
-| **Bloqueante**              | teste vermelho; lint novo; criterio que falhou no app; requisito da spec ausente, parcial ou errado (CONFIRMADO); bug provado por execucao; violacao CONFIRMADA de padrao documentado do repositorio                                                                           | volta ao Build                             |
-| **Atencao**                 | precisa de decisao do usuario ou ele precisa saber antes do merge: criterio `nao comprovado`; desvio que mudou forma, interface ou plano de testes; risco de seguranca ou dados PLAUSIVEL; decisao de dominio (ex.: lint que pode ser regra de negocio); escopo a mais no diff | PR (maximo 5; o excedente vai para a nota) |
+| **Bloqueante**              | teste vermelho; lint novo; criterio que falhou no app; requisito da spec ausente, parcial ou errado (CONFIRMADO); **item do Contrato violado** (CONFIRMADO); frase sem teste e sem desvio registrado; bug provado por execucao; violacao CONFIRMADA de padrao documentado do repositorio | volta ao Build                             |
+| **Atencao**                 | precisa de decisao do usuario ou ele precisa saber antes do merge: criterio `nao comprovado`; frase sem teste automatizado (desvio registrado); falha esperada nova; risco de seguranca ou dados PLAUSIVEL; decisao de dominio (ex.: lint que pode ser regra de negocio); escopo a mais no diff | PR (maximo 5; o excedente vai para a nota) |
 | **Nota**                    | cheiro de codigo, legibilidade, documentacao, achado `[Medio]` sem risco concreto, PLAUSIVEL de baixo risco, refutados com a prova                                                                                                                                             | so a nota                                  |
 | **Sugestao para o projeto** | melhoria **sistemica** com beneficio claro (ver criterios abaixo)                                                                                                                                                                                                              | PR (maximo 3) + nota                       |
 
@@ -103,6 +103,6 @@ Formato: problema, onde aparece, proposta, beneficio, esforco estimado (P/M/G).
 1. Preencha a secao `## Verificacao` da nota com `templates/verificacao.md`.
 2. Se o codigo divergiu do Entendimento ou do Design, atualize o **Entendimento** para refletir o que foi construido.
 3. Escreva o **resumo do diff para o PR** (ate ~100 palavras, sem `arquivo:linha`): o que mudou (comportamento), onde mexeu (por area), o que divergiu do plano e por que, ou "nada divergiu".
-4. Frontmatter: `estagio: verify`, `atualizado`. "Registro de etapas": `verify: concluido em <data>. Modo: <leve|completo>. Rodadas: <n>. Skips: <lista>`.
+4. Frontmatter: `estagio: verify`, `atualizado`. Escreva a linha `verify` no "Registro de etapas", no formato do template da spec.
 5. Sincronize o vault.
 6. **Siga sozinho:** invoque `/task-ship <nota>`.

@@ -16,4 +16,4 @@
 **Limpeza:** <o que foi removido; edicoes revertidas>
 
 ### Candidatos a Atencao (o Verify filtra o que vai para o PR)
-- <desvio que mudou forma/interface/plano de testes; decisao de dominio no lint; comentario "nao remover"; achado sem seam de teste>
+- <frase sem teste automatizado (teste impraticavel); falha esperada registrada; decisao de dominio no lint; comentario "nao remover"; achado sem seam de teste>

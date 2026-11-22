@@ -4,10 +4,12 @@ Comportamento novo. Tambem vale para `docs` e `infra` ate existir arquivo propri
 
 ## Definicao de pronto
 
-- Criterios de aceite do ponto de vista de quem usa:
+- As 5 categorias completas (feliz, erro esperado, repeticao, limite, acesso indevido), do ponto de vista de quem usa:
   - `Quando <ator> <faz acao> <em condicao>, entao <resultado observavel>.`
-- Um criterio por comportamento. Inclua casos de erro e de permissao (ex.: usuario sem acesso).
-- Todo criterio deve ser verificavel no aplicativo real ou na API. Evite criterio que depende de detalhe interno.
+- Uma frase por comportamento. Toda frase e verificavel no aplicativo real ou na API; evite frase que depende de detalhe interno.
+- **Acesso indevido** e obrigatoria quando a feature le ou grava dado com dono (outro cliente, outra entidade, outro local).
+- **Repeticao** e obrigatoria quando a feature grava algo (clique duplo, duas requisicoes simultaneas).
+- O Contrato fixa o que a tela, a API e o banco expoem: rotas, campos, status, permissoes, logs.
 
 ## Investigacao (passo 3)
 

@@ -9,6 +9,8 @@ Comportamento errado que ja existe. O Plan prova que o bug existe, qual e o sint
   - `Quando <condicao que dispara o bug>, entao <comportamento correto>.`
   - `O comando <comando de reproducao> passa de vermelho para verde.`
 - Acrescente ao menos um criterio de nao regressao do comportamento vizinho.
+- Das 5 categorias, use as que o bug toca (ex.: bug de concorrencia -> repeticao; bug de permissao -> acesso indevido). As outras: `nao se aplica - <motivo>`.
+- Contrato: so o que a correcao muda no que outra parte enxerga (ex.: codigo de erro novo). Correcao que nao muda nada visivel alem do sintoma: `C1. Nada muda alem do comportamento das frases.`
 
 ## Investigacao (passo 3)
 

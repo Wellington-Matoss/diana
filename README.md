@@ -129,13 +129,21 @@ Cada task é **uma nota** (Markdown, pensada para Obsidian) que atravessa todos 
 
 | Seção                                                                                                                  | Escrita por             |
 | ---------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| Objetivo, Entendimento, Definição de pronto, Decisões, Fora do escopo, Perguntas em aberto, Evidências da investigação | Plan                    |
-| Design (perguntas resolvidas, nomes, forma, plano de testes, etapas, desvios aceitos)                                  | Design (desvios: Build) |
+| Objetivo, Entendimento (com a Prova com dado real), Definição de pronto, Contrato, Decisões, Fora do escopo, Perguntas em aberto, Evidências da investigação | Plan                    |
+| Design (perguntas resolvidas, nomes, forma, plano de testes, etapas, desvios)                                          | Design (desvios: Build) |
 | Execução                                                                                                               | Build                   |
 | Verificação                                                                                                            | Verify                  |
 | Entrega                                                                                                                | Ship                    |
 | Resultado                                                                                                              | Close                   |
 | Registro de etapas (com os `skip`)                                                                                     | todos                   |
+
+### Definição de pronto, Contrato e Registro
+
+- **Definição de pronto:** frases `quando …, então …` em cinco categorias: **feliz**, **erro esperado**, **repetição** (clique duplo, requisições simultâneas), **limite** (zero, vazio, vencido, máximo) e **acesso indevido** (usuário A vendo ou alterando dado de B). Categoria sem uso leva `não se aplica - motivo`. Cada frase vira um teste com o mesmo título.
+- **Contrato (`C1`, `C2`…):** o que outra parte do sistema, o banco ou o usuário enxerga e fica fixo: rota, formato, status, campo gravado, permissão, log. **Fora do Contrato, tudo é sugestão** e o agente decide sozinho; mudar o Contrato é mudar o *o quê*, e o agente para.
+- **Um lugar por fato:** regra ou valor por extenso só no Contrato; o resto da nota cita `ver C3`.
+- **Prova com dado real:** quando a task mexe em regra sobre dado que já existe, a premissa é testada contra o dado antes da entrevista, só em leitura e só com número agregado.
+- **Registro de etapas:** uma linha por estágio, em formato fixo (`build: concluido em … · modelo … · rodadas N · desvios N · …`), para medir o fluxo por script.
 
 **Ciclo de vida** (frontmatter):
 
@@ -165,7 +173,7 @@ O fluxo é o mesmo para tudo; o **conteúdo** de cada estágio muda conforme o t
 | ------------ | ------------------------------------------------------------------------ | ---------------------------------------------------------- |
 | fix          | o sintoma exato reproduz (vermelho) e depois deixa de reproduzir (verde) | montar o ciclo de feedback: um comando que reproduz o bug  |
 | refatoração  | comportamento igual **e** leitura mais fácil                             | travar o comportamento com testes antes de mover estrutura |
-| feature      | critérios "quando…, então…"                                              | termos do domínio e forma dos dados                        |
+| feature      | frases nas 5 categorias + Contrato                                       | termos do domínio e forma dos dados                        |
 | investigação | pergunta respondida com fontes                                           | delimitar a pergunta (sem código)                          |
 
 **Tamanho** define _como dividir_:
@@ -184,7 +192,7 @@ A unidade que passa por Design → Build → Verify → Ship é sempre uma nota 
 
 Do Build ao Ship, o agente **não pergunta**: decide, registra o motivo e segue. Ele só para, marca a task como `bloqueada` e chama o humano quando:
 
-1. cumprir um critério exige mudar **escopo ou produto**;
+1. cumprir uma frase da Definição de pronto exige mudar **um item do Contrato, o escopo ou o produto**;
 2. o próximo passo **não tem volta** (dado real, branch protegida, apagar dados);
 3. há **ambiguidade de segurança ou permissão**;
 4. um **bloqueio técnico** persiste após 2 rodadas de correção.

@@ -90,7 +90,7 @@ Projeto sem CI: `skip: projeto sem CI`.
 
 - Frontmatter: `status: em-revisao`, `estagio: ship`, `atualizado`, `pr: [<url>, ...]`.
 - Secao `## Entrega`: branch, PRs (URL), estado do CI, changelog (se houve). Escreva como fato: "PR #12 aberto para develop".
-- "Registro de etapas": `ship: concluido em <data>. Skips: <lista>`.
+- Escreva a linha `ship` no "Registro de etapas", no formato do template da spec.
 - Sincronize o vault.
 
 ## 8. Licoes do processo

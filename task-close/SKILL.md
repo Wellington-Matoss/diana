@@ -38,7 +38,7 @@ Para cada task, consulte cada PR da nota (`gh pr view <url> --json state,mergedA
 
 ## 3. Decisoes
 
-- Decisao de arquitetura nova ja foi registrada no Plan ou no Design (criterio das tres condicoes). Confira se existe; se a task criou uma e ela nao foi registrada, registre.
+- Decisao de arquitetura nova ja foi registrada no Plan ou no Design (criterio das tres condicoes), com o usuario presente. Se a task gerou uma decisao que nao foi registrada, **nao crie a nota de decisao**: decisao nova so nasce com OK do usuario. Liste no relatorio como **proposta** (titulo, contexto em uma linha, por que cumpre as tres condicoes).
 - Decisao antiga que a task mudou: acrescente logo abaixo do titulo dela um aviso `> [!info] Ampliada/Superada em parte por [[<task>]]`, com o que continua valendo. Superada por inteiro: tambem `status: substituida`. Nao reescreva o corpo.
 
 ## 4. Debitos e pendencias
@@ -60,4 +60,4 @@ Para cada task, consulte cada PR da nota (`gh pr view <url> --json state,mergedA
 
 ## Relatorio
 
-Por task: fechada | ainda em revisao | pausada (PR fechado sem merge). Para as fechadas: notas de documentacao alteradas, debitos removidos e criados, resultado da verificacao do vault, commit do vault.
+Por task: fechada | ainda em revisao | pausada (PR fechado sem merge). Para as fechadas: notas de documentacao alteradas, debitos removidos e criados, resultado da verificacao do vault, commit do vault. Por ultimo, se houver: **decisoes propostas** aguardando o OK do usuario.
