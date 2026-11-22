@@ -34,6 +34,17 @@ Pare, registre `status: bloqueada` com o motivo e informe o usuario **somente** 
 
 Leia da memoria do agente e do `CLAUDE.md`: branch base do PR; idioma das mensagens; se ha changelog para o usuario final, onde fica, formato e regras de curadoria; se ha CI; repositorios separados.
 
+## Repositorio sem PR
+
+Se a task e de um repositorio que publica direto (contexto do projeto), o Ship encurta. A branch principal desse repositorio nao conta como protegida **so para a ferramenta de publicacao do projeto**; nunca faca commit ou push nela por outro caminho.
+
+1. **Conferir o estado** (passo 1): so os arquivos listados na Execucao estao alterados; nada de segredo.
+2. **Pular** os passos 2, 4, 5 e 6 (`skip: repositorio sem PR`). Changelog (passo 3) so se o contexto pedir.
+3. **Publicar** pela ferramenta do projeto, passando exatamente os arquivos da Execucao **e a nota da task**, com a mensagem de commit do vocabulario do projeto para o estagio `ship`. Siga a saida da ferramenta: erro de validacao, corrija e rode de novo; conflito ou recusa, caso 2 de "Quando parar".
+4. **Nota** (passo 7): `estagio: ship`; secao `## Entrega` com o commit publicado ("publicada no commit <hash>"), sem PR.
+5. **Licoes** (passo 8) igual.
+6. **Fechar:** como nao ha merge a esperar, invoque `/task-close <nota>` em seguida.
+
 ## 0. Conferir a entrada
 
 - Sem argumento: resolva a task ativa como no Build.

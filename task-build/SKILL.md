@@ -23,7 +23,7 @@ Nota (design aprovado) -> 1 Preparar -> 2 Modelo -> 3 Delegar -> 4 Conferir -> 5
 - **Teste primeiro, um teste por vez.** Ver `referencias/tdd.md`.
 - **Teste do plano nao muda para passar.** Nem o esperado, nem a assercao.
 - **O Contrato e a linha.** Fora do Contrato (forma, nomes, divisao das etapas), decida e registre como desvio. Mudar um item do Contrato e mudar o QUE: caso 1 de "Quando parar".
-- **Commit local por etapa. Nunca push no Build.** O push e do `/task-ship`.
+- **Commit local por etapa. Nunca push no Build.** O push e do `/task-ship`. Excecao: repositorio sem PR (secao abaixo).
 - **Nunca trabalhe em `main`, `develop`, `homologacao`** ou outra branch protegida do projeto.
 - **Nenhum passo some em silencio:** `skip: <motivo>`.
 
@@ -41,6 +41,16 @@ Todo o resto: escolha a opcao mais conservadora, registre o motivo e siga.
 ## Contexto do projeto
 
 Leia da memoria do agente e do `CLAUDE.md`: comandos de teste, lint e build por subprojeto; branch base e convencao de nomes; guias de teste do projeto; limitacoes conhecidas (ex.: subprojeto sem teste de componente). Nao invente comando. Se faltar, procure no `package.json` e nos READMEs de teste.
+
+## Repositorio sem PR
+
+Alguns repositorios publicam direto na branch principal pela ferramenta do projeto (ex.: um vault de documentacao com script de sincronizacao). O contexto do projeto diz quais. Numa task desses repositorios:
+
+- **Nao crie branch.** Trabalhe na branch principal, so nos arquivos da task. A regra "nunca trabalhe na branch principal" nao vale para esse repositorio: e o contexto do projeto que o declara assim.
+- **Nao faca commit por etapa.** As mudancas ficam no working tree; quem publica e o `/task-ship`, pela ferramenta do projeto. Registre cada etapa na Execucao (teste que ficou verde, arquivos alterados).
+- Antes de comecar, rode a sincronizacao de entrada da ferramenta (pull).
+- Liste na Execucao **todos os arquivos que a task alterou ou criou**: o Ship publica exatamente essa lista.
+- Todo o resto (TDD, conferencia do lider, limpeza, quando parar) vale igual.
 
 ## 0. Conferir a entrada
 

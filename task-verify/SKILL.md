@@ -45,7 +45,7 @@ Leia da memoria do agente e do `CLAUDE.md`: comandos de teste e lint; branch bas
 ## 1. Preparar
 
 1. Leia a nota: Definicao de pronto, Contrato, Decisoes, Design (inclusive "Comprovacao no app" e "Desvios"), Execucao.
-2. Pegue o diff contra a branch base **uma vez** (`git diff <base>...HEAD`) e a lista de commits. Passe esse diff aos revisores; eles nao rodam git de novo.
+2. Pegue o diff contra a branch base **uma vez** (`git diff <base>...HEAD`) e a lista de commits. Passe esse diff aos revisores; eles nao rodam git de novo. Repositorio sem PR (ver o contexto do projeto): o diff e o das mudancas nao commitadas dos arquivos listados na Execucao (`git diff` mais o conteudo dos arquivos novos).
 3. Rode a suite de testes e o lint. Lint: erro nos arquivos do diff, e aviso **so em linha que o diff alterou**. Teste vermelho ou lint novo = **bloqueante** (passo 5). Nao siga para o passo 2 com teste vermelho.
 
 ## 2. Comprovar no app real (portao)
