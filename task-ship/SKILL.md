@@ -23,7 +23,7 @@ Nota (verify concluido) -> 1 Conferir -> 2 Integrar base -> 3 Changelog -> 4 Pus
 
 ## Quando parar
 
-Pare, registre `status: bloqueada` com o motivo e informe o usuario **somente** se:
+Pare, registre `status: bloqueada` com o motivo e encerre com `RESULTADO: ship bloqueada - <caso e motivo>` (ver "Relatorio final") **somente** se:
 
 1. o diff contem segredo, credencial, `.env` ou dado de cliente;
 2. o push ou o PR exigiria acao sem volta ou em branch protegida, ou a autenticacao do `git`/`gh` nao esta disponivel;
@@ -43,7 +43,7 @@ Se a task e de um repositorio que publica direto (contexto do projeto), o Ship e
 3. **Publicar** pela ferramenta do projeto, passando exatamente os arquivos da Execucao **e a nota da task**, com a mensagem de commit do vocabulario do projeto para o estagio `ship`. Siga a saida da ferramenta: erro de validacao, corrija e rode de novo; conflito ou recusa, caso 2 de "Quando parar".
 4. **Nota** (passo 7): `estagio: ship`; secao `## Entrega` com o commit publicado ("publicada no commit <hash>"), sem PR.
 5. **Licoes** (passo 8) igual.
-6. **Fechar:** como nao ha merge a esperar, invoque `/task-close <nota>` em seguida.
+6. **Fechar:** como nao ha merge a esperar, o orquestrador chama o `/task-close <nota>` em seguida. Nao chame voce: encerre com `RESULTADO: ship concluido - publicada no commit <hash>`.
 
 ## 0. Conferir a entrada
 
@@ -134,3 +134,5 @@ Uma mensagem curta ao usuario:
 - Sugestoes para o projeto: quantidade (ou "nenhuma");
 - Licoes registradas: quantidade (ou "nenhuma");
 - lembrete: o merge e do usuario; depois do merge, `/task-close` (ou a rotina agendada) fecha a task.
+
+A ultima linha da resposta e `RESULTADO: ship concluido - PR <url>` (com dois PRs, as duas URLs).

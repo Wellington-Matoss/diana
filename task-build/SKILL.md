@@ -1,6 +1,6 @@
 ---
 name: task-build
-description: Estagio 3 (Build) do fluxo Plan > Design > Build > Verify > Ship. Executa de forma autonoma o Design aprovado - prepara a branch, escolhe o modelo, delega a um subagente que escreve com teste primeiro (um teste por vez) e faz um commit local por etapa, confere a evidencia, limpa o diff e segue sozinho para o /task-verify. So para nos casos definidos.
+description: Estagio 3 (Build) do fluxo Plan > Design > Build > Verify > Ship. Executa de forma autonoma o Design aprovado - prepara a branch, escolhe o modelo, delega a um subagente que escreve com teste primeiro (um teste por vez) e faz um commit local por etapa, confere a evidencia, limpa o diff e encerra com uma linha de resultado; o orquestrador chama o /task-verify. So para nos casos definidos.
 argument-hint: <caminho da nota da task no vault> (vazio = resolver a task ativa)
 disable-model-invocation: true
 ---
@@ -10,7 +10,7 @@ disable-model-invocation: true
 Voce e o **lider** do Build. Voce nao escreve codigo de producao: delega a um subagente, confere o resultado pela evidencia e decide o proximo passo. A partir daqui o fluxo e **autonomo ate o PR**. O usuario revisa no PR.
 
 ```
-Nota (design aprovado) -> 1 Preparar -> 2 Modelo -> 3 Delegar -> 4 Conferir -> 5 Limpar -> 6 Registrar -> /task-verify
+Nota (design aprovado) -> 1 Preparar -> 2 Modelo -> 3 Delegar -> 4 Conferir -> 5 Limpar -> 6 Registrar -> RESULTADO
                           (branch,      (automatico) (subagente:  (evidencia,   (diff)
                            linha de base)             TDD, commit  nao relato)
                                                       por etapa)
@@ -29,7 +29,7 @@ Nota (design aprovado) -> 1 Preparar -> 2 Modelo -> 3 Delegar -> 4 Conferir -> 5
 
 ## Quando parar
 
-Pare, registre na nota com `status: bloqueada` e o motivo, sincronize o vault e informe o usuario **somente** se:
+Pare, registre na nota com `status: bloqueada` e o motivo, sincronize o vault e encerre com `RESULTADO: build bloqueada - <caso e motivo>` (ver passo 6) **somente** se:
 
 1. cumprir uma frase da Definicao de pronto exige mudar **um item do Contrato, o escopo ou o produto** (o QUE);
 2. o proximo passo **nao tem volta**: alterar dado real, escrever em branch protegida, force push, apagar dados;
@@ -114,7 +114,7 @@ Limpeza nao e refatoracao: nao mude estrutura que o Design nao previu.
 3. Falha esperada: cada uma com a linha correspondente na lista de debitos (ver `referencias/tdd.md`) e nos candidatos a "Atencao".
 4. Frontmatter: `estagio: build`, `atualizado`. Escreva a linha `build` no "Registro de etapas", no formato do template da spec.
 5. Sincronize o vault.
-6. **Siga sozinho:** invoque `/task-verify <nota>`. Nao espere o usuario.
+6. **Encerre com a linha de resultado.** A ultima linha da resposta e `RESULTADO: build concluido - <resumo em uma linha>`. Nao chame o `/task-verify`: as skills do fluxo so rodam quando chamadas de fora. O orquestrador le essa linha e o estado da nota e chama o proximo estagio.
 
 ## Por tipo
 

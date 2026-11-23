@@ -146,4 +146,4 @@ Fix focado ou ajuste pequeno: passo 2 `skip`; passo 4 com uma forma so e o motiv
 
 Esta e a **ultima aprovacao do usuario antes do PR**. Diga isso na mensagem de aprovacao do passo 7.
 
-Proximo passo: **`/task-build <nota>`**, de preferencia em **sessao nova**. A nota e o handoff: o Build nao precisa desta conversa. Do Build em diante o fluxo segue sozinho (Build -> Verify -> Ship) ate abrir o PR.
+Proximo passo: **`/task-build <nota>`**, de preferencia em **sessao nova**. A nota e o handoff: o Build nao precisa desta conversa. Do Build em diante o fluxo segue sem o usuario: o orquestrador chama Build -> Verify -> Ship, um estagio por sessao, ate abrir o PR.

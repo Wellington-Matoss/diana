@@ -1,6 +1,6 @@
 ---
 name: task-verify
-description: Estagio 4 (Verify) do fluxo Plan > Design > Build > Verify > Ship. Portao unico que pode reprovar o trabalho, de forma autonoma - roda testes e lint, comprova cada criterio no app real, revisa em paralelo (spec, padroes, ataque ao diff, raio de impacto), separa quem acha de quem julga, classifica os achados, devolve bloqueantes ao Build e segue sozinho para o /task-ship.
+description: Estagio 4 (Verify) do fluxo Plan > Design > Build > Verify > Ship. Portao unico que pode reprovar o trabalho, de forma autonoma - roda testes e lint, comprova cada criterio no app real, revisa em paralelo (spec, padroes, ataque ao diff, raio de impacto), separa quem acha de quem julga, classifica os achados, devolve bloqueantes ao Build e encerra com uma linha de resultado; o orquestrador chama o /task-ship.
 argument-hint: <caminho da nota da task no vault> (vazio = resolver a task ativa)
 disable-model-invocation: true
 ---
@@ -10,7 +10,7 @@ disable-model-invocation: true
 Voce e o **portao** entre o codigo e o PR. E o unico estagio que reprova. O fluxo continua **autonomo**: voce nao pergunta ao usuario; decide, prova e registra. O usuario le o resultado no PR.
 
 ```
-Nota (build concluido) -> 1 Preparar -> 2 App real -> 3 Revisar (paralelo) -> 4 Julgar -> 5 Classificar -> 6 Registrar -> /task-ship
+Nota (build concluido) -> 1 Preparar -> 2 App real -> 3 Revisar (paralelo) -> 4 Julgar -> 5 Classificar -> 6 Registrar -> RESULTADO
                           (testes,      (portao)    (spec, padroes,          (provar     (bloqueante volta
                            lint)                     ataque, raio)            ou cair)    ao Build)
 ```
@@ -25,7 +25,7 @@ Nota (build concluido) -> 1 Preparar -> 2 App real -> 3 Revisar (paralelo) -> 4 
 
 ## Quando parar
 
-Igual ao Build. Pare, registre `status: bloqueada` com o motivo e informe o usuario **somente** se:
+Igual ao Build. Pare, registre `status: bloqueada` com o motivo e encerre com `RESULTADO: verify bloqueada - <caso e motivo>` (ver passo 6) **somente** se:
 
 1. cumprir um criterio exige mudar **escopo ou produto**;
 2. o proximo passo **nao tem volta** (dado real, branch protegida, apagar dados);
@@ -105,4 +105,4 @@ Formato: problema, onde aparece, proposta, beneficio, esforco estimado (P/M/G).
 3. Escreva o **resumo do diff para o PR** (ate ~100 palavras, sem `arquivo:linha`): o que mudou (comportamento), onde mexeu (por area), o que divergiu do plano e por que, ou "nada divergiu".
 4. Frontmatter: `estagio: verify`, `atualizado`. Escreva a linha `verify` no "Registro de etapas", no formato do template da spec.
 5. Sincronize o vault.
-6. **Siga sozinho:** invoque `/task-ship <nota>`.
+6. **Encerre com a linha de resultado.** A ultima linha da resposta e `RESULTADO: verify concluido - <bloqueantes corrigidos N, atencao N>`. Nao chame o `/task-ship`: as skills do fluxo so rodam quando chamadas de fora. O orquestrador le essa linha e o estado da nota e chama o proximo estagio.

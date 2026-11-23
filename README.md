@@ -2,7 +2,7 @@
 
 Skills para Claude Code que levam uma demanda de **ideia a pull request** em cinco estágios: **Plan → Design → Build → Verify → Ship**.
 
-O humano trabalha onde o julgamento dele é insubstituível: **decidir o que construir (Plan) e como construir (Design)**. Do Build em diante, o agente segue sozinho até abrir o PR. O humano volta para revisar e fazer o merge.
+O humano trabalha onde o julgamento dele é insubstituível: **decidir o que construir (Plan) e como construir (Design)**. Do Build em diante, o fluxo segue sem o humano até abrir o PR: um orquestrador chama cada estágio. O humano volta para revisar e fazer o merge.
 
 ---
 
@@ -111,11 +111,11 @@ Depois do merge, atualiza a documentação de arquitetura para descrever **como 
 | `task-plan`   | Plan    | `/task-plan <demanda>`   | `tipos/` (fix, feature, refatoração, investigação), `tamanhos/` (épico, mapa), `templates/` (spec, questionário)      |
 | `task-design` | Design  | `/task-design <nota>`    | `referencias/` (vocabulário de forma, protótipo de UI, protótipo de lógica, design duas vezes), `templates/design.md` |
 | `task-build`  | Build   | `/task-build <nota>`     | `referencias/` (TDD, limpeza), `templates/` (brief do subagente, execução)                                            |
-| `task-verify` | Verify  | automático após o Build  | `referencias/` (app real, revisores), `templates/verificacao.md`                                                      |
-| `task-ship`   | Ship    | automático após o Verify | `referencias/commits.md`, `templates/` (PR, lições)                                                                   |
+| `task-verify` | Verify  | orquestrador, após o Build  | `referencias/` (app real, revisores), `templates/verificacao.md`                                                      |
+| `task-ship`   | Ship    | orquestrador, após o Verify | `referencias/commits.md`, `templates/` (PR, lições)                                                                   |
 | `task-close`  | Close   | `/task-close [nota]`     | —                                                                                                                     |
 
-Todas usam `disable-model-invocation: true`: só rodam quando chamadas (pelo humano ou pelo estágio anterior), nunca por iniciativa do modelo.
+Todas usam `disable-model-invocation: true`: só rodam quando chamadas de fora (pelo humano ou por um orquestrador), nunca por iniciativa do modelo. Por isso **uma skill não chama a seguinte**: o Claude Code recusa a chamada de uma skill com essa opção pela ferramenta Skill (testado em 23/11/2026, Claude Code 2.1.330). Cada estágio autônomo termina com uma linha de resultado para o orquestrador (ver [Uso](#uso)).
 
 ### Padrão de commit e PR
 
@@ -257,10 +257,22 @@ Confirme na documentação do Claude Code da sua versão o local exato das skill
 ```text
 /task-plan <descreva a demanda>     # entrevista, teach-back, spec
 /task-design <nota>                 # protótipo se precisar, forma, testes, etapas, aprovação
-/task-build <nota>                  # em sessão nova; segue sozinho até o PR
+                                    # do Build ao Ship, o orquestrador chama cada estágio:
+claude -p "/task-build <nota>"      # sessão nova; termina com RESULTADO
+claude -p "/task-verify <nota>"     # só se o anterior terminou com "concluido"
+claude -p "/task-ship <nota>"       # abre o PR
                                     # ... revisão e merge do PR pelo humano ...
 /task-close                         # fecha as tasks com PR mergeado
 ```
+
+A última linha de cada estágio autônomo segue um formato fixo, para o orquestrador decidir se segue:
+
+```text
+RESULTADO: <build|verify|ship> concluido - <resumo em uma linha>
+RESULTADO: <build|verify|ship> bloqueada - <caso de parada e motivo>
+```
+
+A fonte da verdade continua sendo a nota (`status` e `estagio` no frontmatter); a linha só evita que o orquestrador interprete texto livre. Em `claude -p` não há como aprovar permissões durante a execução: libere antes os comandos de git, `gh`, teste, lint e build do projeto.
 
 ---
 

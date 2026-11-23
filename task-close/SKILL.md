@@ -17,7 +17,7 @@ Memoria do agente e `CLAUDE.md`: onde ficam as notas de arquitetura, as decisoes
 
 - Com argumento: so aquela nota.
 - Sem argumento: todas as notas com `status: em-revisao`.
-- Task de repositorio sem PR (chamada pelo `/task-ship` logo apos publicar): pule o passo 1 e feche direto; no Resultado, "publicada no commit <hash>" no lugar do PR.
+- Task de repositorio sem PR (chamada pelo orquestrador logo apos o Ship publicar): pule o passo 1 e feche direto; no Resultado, "publicada no commit <hash>" no lugar do PR.
 - Sincronize o vault.
 
 ## 1. Conferir o PR
