@@ -172,6 +172,28 @@ def montar_vault():
     v.escrever("Pendentes/Task - Corrige dois.md", nota(
         "FIX-002", tipo="fix", corpo_extra="Veio de [[Task - Antiga|alias]]."))
     v.commit("FIX-002: plan", "2026-11-06T10:00:00-03:00")
+
+    # NOV-003 - fluxo novo sem commit de plan, build e verify (so design, ship e concluida),
+    # com rajada de commits na sincronizacao
+    p = "Pendentes/Task - Nova tres.md"
+    v.escrever(p, nota("NOV-003", estagio="design", registro="\n".join(reg1[:2])))
+    v.commit("NOV-003: design", "2026-11-10T09:00:00-03:00")
+    v.escrever(p, nota("NOV-003", estagio="ship", registro=REGISTRO_COMPLETO))
+    v.commit("NOV-003: ship", "2026-11-10T14:00:00-03:00")
+    v.escrever(p, nota("NOV-003", estagio="ship", status="concluida", registro=REGISTRO_COMPLETO,
+                       extra="concluida_em: 2026-11-10\n"))
+    v.commit("NOV-003: concluida", "2026-11-10T14:01:00-03:00")
+
+    # OLD-002 - fluxo antigo com o vocabulario de outubro
+    p = "Pendentes/Task - Antiga dois.md"
+    v.escrever(p, nota("OLD-002"))
+    v.commit("OLD-002: nova task (teste)", "2026-10-10T09:00:00-03:00")
+    v.commit("OLD-002: implementada", "2026-10-10T10:00:00-03:00")
+    v.commit("OLD-002: divergencias aceitas", "2026-10-10T10:30:00-03:00")
+    v.commit("OLD-002: revisao registrada (2 opcionais)", "2026-10-10T11:00:00-03:00")
+    v.commit("OLD-002: review registrado (sem correcoes)", "2026-10-10T12:00:00-03:00")
+    v.escrever(p, nota("OLD-002", status="concluida", extra="concluida_em: 2026-10-10\n"))
+    v.commit("OLD-002: concluida", "2026-10-10T13:00:00-03:00")
     return v
 
 
@@ -230,6 +252,29 @@ class TestParseRegistro(unittest.TestCase):
         self.assertIsNone(metricas.parse_linha_registro("- texto livre qualquer"))
 
 
+class TestContrato(unittest.TestCase):
+    def test_c1_vale_sempre(self):
+        self.assertTrue(metricas.checar_contrato(nota("X-001", contrato="Regra.")))
+
+    def test_fatia_que_cita_cn_da_mae(self):
+        t = nota("X-002", extra='pai: "[[Task - Mae]]"\n').replace("- **C1.** Regra fixa.", "- Ver C6 da nota-mae.")
+        self.assertNotIn("C1", metricas.secao(t, "Contrato"))
+        self.assertTrue(metricas.checar_contrato(t))
+
+    def test_fatia_com_link_para_a_mae(self):
+        t = nota("X-003", extra='pai: "[[Task - Mae]]"\n').replace(
+            "- **C1.** Regra fixa.", "- Vale o Contrato de [[Task - Mae|nota-mae]].")
+        self.assertTrue(metricas.checar_contrato(t))
+
+    def test_sem_pai_cn_nao_basta(self):
+        t = nota("X-004").replace("- **C1.** Regra fixa.", "- Ver C6 da nota-mae.")
+        self.assertFalse(metricas.checar_contrato(t))
+
+    def test_fatia_sem_cn_e_sem_link(self):
+        t = nota("X-005", extra='pai: "[[Task - Mae]]"\n').replace("- **C1.** Regra fixa.", "- Ver a nota-mae.")
+        self.assertFalse(metricas.checar_contrato(t))
+
+
 class TestRegraN(unittest.TestCase):
     def test_abaixo_de_10_sem_percentual(self):
         ind = metricas.percentual(["A-1"], ["A-%d" % i for i in range(1, 10)])
@@ -275,13 +320,33 @@ class TestMiniVault(unittest.TestCase):
 
     def test_tempo_por_estagio(self):
         t = metricas.tempos_estagio(self.vault.por_id["NOV-001"])
-        self.assertEqual(t, {"plan": 0.0, "design": 2.0, "build": 4.0, "verify": 1.0, "ship": 1.0, "concluida": 1.0})
-        self.assertEqual(metricas.tempo_total(self.vault.por_id["NOV-001"]), 9.0)
+        # plan nao tem estagio anterior: fica fora
+        self.assertEqual(t, {"design": 2.0, "build": 4.0, "verify": 1.0, "ship": 1.0, "concluida": 1.0})
+        self.assertEqual(metricas.intervalo_registrado(self.vault.por_id["NOV-001"]), 9.0)
+
+    def test_tempo_por_estagio_so_entre_commits_consecutivos(self):
+        n = self.vault.por_id["NOV-003"]
+        # sem build e verify: ship nao e calculado (o anterior, verify, nao tem commit)
+        self.assertEqual(metricas.tempos_estagio(n), {"concluida": 0.0})
+        self.assertEqual(metricas.intervalo_registrado(n), 5.0)
+
+    def test_cobertura_dos_commits_de_estagio(self):
+        self.assertTrue(metricas.cobertura_commits(self.vault.por_id["NOV-001"]))
+        self.assertFalse(metricas.cobertura_commits(self.vault.por_id["NOV-003"]))
+        self.assertIsNone(metricas.cobertura_commits(self.vault.por_id["OLD-001"]))
+
+    def test_vocabulario_de_revisao_no_fluxo_antigo(self):
+        n = self.vault.por_id["OLD-002"]
+        self.assertEqual(n.fluxo, "antigo")
+        # revisao registrada + review registrado = 2 rodadas; divergencias nao conta
+        self.assertEqual(len(n.rotulos("revisada")), 2)
+        self.assertEqual(metricas.estagios_repetidos(n), 1)
+        self.assertIsNone(metricas.rotulo_canonico("divergencias"))
 
     def test_retrabalho(self):
         self.assertEqual(metricas.estagios_repetidos(self.vault.por_id["NOV-001"]), 1)
         self.assertEqual(metricas.estagios_repetidos(self.vault.por_id["OLD-001"]), 1)
-        self.assertEqual(metricas.tempo_total(self.vault.por_id["OLD-001"]), 24.0)
+        self.assertEqual(metricas.intervalo_registrado(self.vault.por_id["OLD-001"]), 24.0)
 
     def test_parada_bloqueada(self):
         p = metricas.paradas(self.vault.por_id["NOV-002"])
@@ -319,9 +384,21 @@ class TestMiniVault(unittest.TestCase):
             ga = nov["fluxo_novo"]["grupos"]["A"]
             self.assertEqual(ga["contrato_ou_dod_alterado_apos_design"]["ids_sim"], ["NOV-001"])
             self.assertIsNone(ga["contrato_ou_dod_alterado_apos_design"]["valor"])  # N < 10
-            self.assertEqual(ga["defeito_escapado"]["ids"], ["FIX-001"])
-            self.assertTrue(ga["defeito_escapado"]["aproximado"])
-            self.assertEqual(dados["periodos"][1]["fluxo_antigo"]["tasks"]["ids"], ["OLD-001"])
+            self.assertNotIn("defeito_escapado", ga)
+            esc = nov["fluxo_novo"]["experimental"]["defeito_escapado"]
+            self.assertEqual(esc["ids"], ["FIX-001"])
+            self.assertTrue(esc["aproximado"])
+            # fora do resumo e da tabela; so na secao Experimental do Markdown
+            antes_exp, depois_exp = txt_md.split("## Experimental")
+            self.assertNotIn("efeito escapado", antes_exp)
+            self.assertIn("Defeito escapado", depois_exp)
+            self.assertIn("nao e tempo de trabalho", txt_md.split("## Fluxo novo")[0])
+            gb = nov["fluxo_novo"]["grupos"]["B"]
+            self.assertEqual(gb["cobertura_commits_estagio"]["ids_sim"], ["NOV-001", "NOV-002"])
+            self.assertNotIn("plan", gb["tempo_por_estagio_horas"])
+            ret = dados["periodos"][1]["fluxo_antigo"]["grupos"]["B"]["retrabalho_revisao_repetida"]
+            self.assertEqual(ret["detalhe"], {"OLD-001": 1, "OLD-002": 1})
+            self.assertEqual(dados["periodos"][1]["fluxo_antigo"]["tasks"]["ids"], ["OLD-001", "OLD-002"])
             self.assertIn("NOV-001", txt_md)
             self.assertIn("| Indicador | 2026-11 | 2026-10 |", txt_md)
             self.assertEqual(sorted(os.listdir(saida)),

@@ -31,6 +31,29 @@ ESTAGIOS_NOVOS = ["plan", "design", "build", "verify", "ship"]
 ORDEM_NOVA = ESTAGIOS_NOVOS + ["concluida"]
 ROTULOS_ANTIGOS = ["nova", "implementada", "revisada", "concluida"]
 ROTULOS = set(ORDEM_NOVA) | set(ROTULOS_ANTIGOS)
+# Variantes do rotulo de revisao no fluxo antigo (conferidas no git log do vault):
+# "revisao registrada" e "review registrado" (set-out/2026) e "revisada" (nov/2026) marcam
+# uma rodada de revisao registrada na nota. "divergencias aceitas|respondidas" vem ANTES
+# da revisao (resposta do implementador as divergencias) e nao e rodada: fica fora.
+SINONIMOS_ROTULO = {"revisao": "revisada", "review": "revisada"}
+
+
+REGRA_REVISAO_ANTIGA = (
+    "rodada de revisao = commit '<ID>: revisada|revisao|review ...'; "
+    "'divergencias' nao conta (vem antes da revisao)"
+)
+AVISO_INTERVALO = (
+    "nao e tempo de trabalho: nem todo estagio ganha commit e os commits saem em rajada"
+)
+MOTIVO_EXPERIMENTAL = (
+    "nao confiavel: fixes citam tasks da mesma frente por contexto, nao por defeito; "
+    "a forma de torna-lo exato sera decidida pelo dono"
+)
+
+
+def rotulo_canonico(palavra):
+    p = SINONIMOS_ROTULO.get(palavra.lower(), palavra.lower())
+    return p if p in ROTULOS else None
 N_MINIMO_PERCENTUAL = 10
 
 ID_RE = re.compile(r"\b[A-Z][A-Z0-9]{1,9}-\d{1,4}(?:-[A-Z0-9]{1,4})?\b")
@@ -394,9 +417,23 @@ def checar_prova(texto_nota):
     return bool(re.search(r"fonte|nao se aplica\s*-\s*\S|prova indisponivel\s*-\s*\S", t))
 
 
-def checar_contrato(texto_nota):
+def checar_contrato(texto_nota, fm=None):
+    """Contrato valido: tem C1; ou, em fatia de epico (pai: no frontmatter),
+    cita um C<n> ou faz link para a nota-mae."""
     corpo = secao(texto_nota, "Contrato")
-    return bool(corpo and re.search(r"\bC1\b", corpo))
+    if not corpo:
+        return False
+    if re.search(r"\bC1\b", corpo):
+        return True
+    fm = fm if fm is not None else parse_frontmatter(texto_nota)
+    pai = fm.get("pai")
+    pais = [p for p in (pai if isinstance(pai, list) else [pai]) if isinstance(p, str) and p.strip()]
+    if not pais:
+        return False
+    if re.search(r"\bC\d+\b", corpo):
+        return True
+    alvos_pai = {normalizar(l.strip()) for p in pais for l in LINK_RE.findall(p)}
+    return any(normalizar(l.strip()) in alvos_pai for l in LINK_RE.findall(corpo))
 
 
 # ---------------------------------------------------------------- modelo
@@ -472,8 +509,8 @@ class Vault:
         for sha, data, assunto in self.git.commits():
             m = COMMIT_ESTAGIO_RE.match(assunto)
             rotulo_id, rotulo = None, None
-            if m and m.group(1) in self.por_id and normalizar(m.group(2)) in ROTULOS:
-                rotulo_id, rotulo = m.group(1), normalizar(m.group(2))
+            if m and m.group(1) in self.por_id and rotulo_canonico(m.group(2)):
+                rotulo_id, rotulo = m.group(1), rotulo_canonico(m.group(2))
             citados = set(t for t in ID_RE.findall(assunto) if t in self.por_id)
             for i in citados:
                 self.por_id[i].commits_id.append((sha, data, "", rotulo if i == rotulo_id else None))
@@ -533,38 +570,48 @@ def tarefas_do_mes(vault, mes):
 
 
 def tempos_estagio(nota):
-    """Horas por estagio pelos commits do vault (fim do estagio = ultimo commit dele)."""
-    if not nota.commits_id:
-        return {}
-    inicio = nota.commits_id[0][1]
+    """Horas por estagio pelos commits do vault.
+
+    Fim do estagio = ultimo commit dele. So calcula o estagio S quando existem os dois
+    commits consecutivos: o do estagio anterior na ordem (plan, design, build, verify,
+    ship, concluida) e o de S. O plan nunca tem estagio anterior, entao nao entra.
+    Nao e tempo de trabalho: e o intervalo entre registros no vault.
+    """
     fins = {}
     for e in ORDEM_NOVA:
         cs = nota.rotulos(e)
         if cs:
             fins[e] = cs[-1][1]
     tempos = {}
-    anterior = inicio
-    for e in ORDEM_NOVA:
-        if e not in fins:
-            continue
-        d = horas(fins[e] - anterior)
-        if d >= 0:
-            tempos[e] = d
-        anterior = fins[e]
+    for anterior, e in zip(ORDEM_NOVA, ORDEM_NOVA[1:]):
+        if anterior in fins and e in fins:
+            d = horas(fins[e] - fins[anterior])
+            if d >= 0:
+                tempos[e] = d
     return tempos
 
 
-def tempo_total(nota):
+def intervalo_registrado(nota):
+    """Horas do primeiro commit da task (com o ID) ao ultimo commit '<ID>: concluida'.
+
+    Nao e tempo de trabalho: nem todo estagio ganha commit e os commits saem em rajada.
+    """
     conc = nota.rotulos("concluida")
     if not conc or not nota.commits_id:
         return None
-    if nota.fluxo == "antigo":
-        novas = nota.rotulos("nova")
-        inicio = novas[0][1] if novas else nota.commits_id[0][1]
-    else:
-        inicio = nota.commits_id[0][1]
-    d = horas(conc[-1][1] - inicio)
+    d = horas(conc[-1][1] - nota.commits_id[0][1])
     return d if d >= 0 else None
+
+
+def cobertura_commits(nota):
+    """True se cada estagio do Registro tem commit '<ID>: <estagio>' (close -> concluida)."""
+    if not nota.registro:
+        return None
+    for est in nota.registro:
+        rot = "concluida" if est == "close" else est
+        if not nota.rotulos(rot):
+            return False
+    return True
 
 
 def estagios_repetidos(nota):
@@ -600,8 +647,8 @@ def contrato_alterado(nota):
         atual = (normalizar_secao(secao(v, "Contrato")), normalizar_secao(secao(v, "Definicao de pronto")))
         if atual != ref:
             m = COMMIT_ESTAGIO_RE.match(nota.historico[i][2])
-            rot = normalizar(m.group(2)) if m and m.group(1) == nota.id else "outro"
-            return rot if rot in ROTULOS else "outro"
+            rot = rotulo_canonico(m.group(2)) if m and m.group(1) == nota.id else None
+            return rot or "outro"
     return ""
 
 
@@ -770,29 +817,46 @@ def calcular_mes(vault, mes, config, usar_gh, cache_pr):
         por_estagio=par_por_motivo,
         nota="motivo = estagio no momento da parada; o texto do motivo nao sai (LGPD)",
     )
+    # Experimental: fora do resumo, da tabela e do criterio das 3 tasks fora do padrao.
     fixes = sorted({f for f, _o in escapados})
-    g["A"]["defeito_escapado"] = indicador(
-        len(fixes), fixes, "fixes",
-        origens=sorted({o for _f, o in escapados}),
-        pares=[[f, o] for f, o in sorted(escapados)],
-        aproximado=True, janela_dias=janela,
-    )
+    resultado["fluxo_novo"]["experimental"] = {
+        "defeito_escapado": indicador(
+            len(fixes), fixes, "fixes",
+            origens=sorted({o for _f, o in escapados}),
+            pares=[[f, o] for f, o in sorted(escapados)],
+            aproximado=True, janela_dias=janela,
+            nota=MOTIVO_EXPERIMENTAL,
+        )
+    }
 
     # B. O fluxo andou bem?
     concl = [n for n in novas if no_mes(n.concluida_em(), mes) and n.rotulos("concluida")]
-    tt = {n.id: tempo_total(n) for n in concl}
+    tt = {n.id: intervalo_registrado(n) for n in concl}
     tt = {k: v for k, v in tt.items() if v is not None}
-    g["B"]["tempo_total_horas"] = indicador(resumo_numerico(list(tt.values())), list(tt), "h", detalhe=tt,
-                                            nota="tasks concluidas no mes")
+    g["B"]["intervalo_registrado_horas"] = indicador(
+        resumo_numerico(list(tt.values())), list(tt), "h", detalhe=tt,
+        nota="do primeiro commit da task ao concluida; tasks concluidas no mes; " + AVISO_INTERVALO,
+    )
+    cob_base = [n for n in novas if n.registro]
+    g["B"]["cobertura_commits_estagio"] = percentual(
+        [n.id for n in cob_base if cobertura_commits(n)], [n.id for n in cob_base],
+        sem_cobertura={n.id: sorted(e for e in n.registro
+                                    if not n.rotulos("concluida" if e == "close" else e))
+                       for n in cob_base if not cobertura_commits(n)},
+        nota="tasks com commit '<ID>: <estagio>' de todos os estagios que o Registro da nota tem",
+    )
     por_estagio = {}
-    for e in ORDEM_NOVA:
+    for e in ORDEM_NOVA[1:]:
         vals = {}
         for n in novas:
             t = tempos_estagio(n)
             cs = n.rotulos(e)
             if e in t and cs and no_mes(cs[-1][1], mes):
                 vals[n.id] = t[e]
-        por_estagio[e] = indicador(resumo_numerico(list(vals.values())), list(vals), "h", detalhe=vals)
+        por_estagio[e] = indicador(
+            resumo_numerico(list(vals.values())), list(vals), "h", detalhe=vals,
+            nota="so entre o commit do estagio anterior e o deste, quando os dois existem",
+        )
     g["B"]["tempo_por_estagio_horas"] = por_estagio
     rep = {n.id: estagios_repetidos(n) for n in novas}
     rep = {k: v for k, v in rep.items() if v > 0}
@@ -838,7 +902,6 @@ def calcular_mes(vault, mes, config, usar_gh, cache_pr):
     # C. O Verify acertou?
     bloq = {n.id: n.registro["verify"]["campos"]["bloqueantes"] for n in novas
             if "verify" in n.registro and isinstance(n.registro["verify"]["campos"].get("bloqueantes"), int)}
-    origens = {o for _f, o in escapados}
     depois = {}
     for i in bloq:
         motivos = []
@@ -846,15 +909,13 @@ def calcular_mes(vault, mes, config, usar_gh, cache_pr):
             motivos.append("ci_vermelho")
         if g["B"]["pr"]["changes_requested"].get(i):
             motivos.append("changes_requested")
-        if i in origens:
-            motivos.append("defeito_escapado")
         if motivos:
             depois[i] = motivos
     g["C"]["bloqueantes_no_verify"] = indicador(sum(bloq.values()), list(bloq), "bloqueantes", detalhe=bloq)
     g["C"]["problemas_depois_do_verify"] = indicador(
         len(depois), list(depois), "tasks", detalhe=depois,
         verify_sem_bloqueante=sorted(i for i in depois if bloq.get(i) == 0),
-        nota="CI vermelho e CHANGES_REQUESTED dependem do gh; defeito escapado e aproximado",
+        nota="CI vermelho e CHANGES_REQUESTED, pelo gh; defeito escapado fica de fora (experimental)",
     )
     ref = {n.id: (n.registro["verify"]["campos"].get("refutados"), n.registro["verify"]["campos"].get("candidatos"))
            for n in novas if "verify" in n.registro}
@@ -878,8 +939,11 @@ def calcular_mes(vault, mes, config, usar_gh, cache_pr):
     com_registro = [n for n in novas if n.registro]
     dod5 = [n.id for n in com_registro if checar_dod(n.texto) == 5]
     g["D"]["dod_5_categorias"] = percentual(dod5, [n.id for n in com_registro])
-    c1 = [n.id for n in com_registro if checar_contrato(n.texto)]
-    g["D"]["contrato_com_c1"] = percentual(c1, [n.id for n in com_registro])
+    c1 = [n.id for n in com_registro if checar_contrato(n.texto, n.fm)]
+    g["D"]["contrato_valido"] = percentual(
+        c1, [n.id for n in com_registro],
+        regra="tem C1; ou tem pai: e cita um C<n> ou faz link para a nota-mae",
+    )
     pv = [n.id for n in com_registro if checar_prova(n.texto)]
     g["D"]["prova_com_dado_real"] = percentual(pv, [n.id for n in com_registro])
     linhas_ok = [n.id for n in com_registro if all(r["valida"] for r in n.registro.values())]
@@ -900,15 +964,21 @@ def calcular_mes(vault, mes, config, usar_gh, cache_pr):
 
     # --- fluxo antigo: so o que da
     concl_a = [n for n in antigas if no_mes(n.concluida_em(), mes) and n.rotulos("concluida")]
-    tta = {n.id: tempo_total(n) for n in concl_a}
+    tta = {n.id: intervalo_registrado(n) for n in concl_a}
     tta = {k: v for k, v in tta.items() if v is not None}
     repa = {n.id: estagios_repetidos(n) for n in antigas}
     repa = {k: v for k, v in repa.items() if v > 0}
     resultado["fluxo_antigo"]["grupos"] = {
         "B": {
-            "tempo_total_horas": indicador(resumo_numerico(list(tta.values())), list(tta), "h", detalhe=tta,
-                                           nota="nova -> concluida; tasks concluidas no mes"),
-            "retrabalho_revisada_repetida": indicador(sum(repa.values()), list(repa), "commits a mais", detalhe=repa),
+            "intervalo_registrado_horas": indicador(
+                resumo_numerico(list(tta.values())), list(tta), "h", detalhe=tta,
+                nota="do primeiro commit da task ao concluida; tasks concluidas no mes; " + AVISO_INTERVALO,
+            ),
+            "retrabalho_revisao_repetida": indicador(
+                sum(repa.values()), list(repa), "commits a mais", detalhe=repa,
+                tasks_com_revisao=len([n for n in antigas if n.rotulos("revisada")]),
+                regra=REGRA_REVISAO_ANTIGA,
+            ),
         }
     }
     return resultado
@@ -940,8 +1010,14 @@ LINHAS_TABELA_NOVO = [
     ("A. Contrato/DoD alterado apos Design", lambda r: r["fluxo_novo"]["grupos"]["A"]["contrato_ou_dod_alterado_apos_design"]),
     ("A. Desvios por task (build)", lambda r: r["fluxo_novo"]["grupos"]["A"]["desvios_por_task"]),
     ("A. Paradas (bloqueada)", lambda r: r["fluxo_novo"]["grupos"]["A"]["paradas_bloqueada"]),
-    ("A. Defeito escapado (aproximado)", lambda r: r["fluxo_novo"]["grupos"]["A"]["defeito_escapado"]),
-    ("B. Tempo total (h)", lambda r: r["fluxo_novo"]["grupos"]["B"]["tempo_total_horas"]),
+    ("B. Intervalo registrado no vault (h), do primeiro commit da task ao concluida",
+     lambda r: r["fluxo_novo"]["grupos"]["B"]["intervalo_registrado_horas"]),
+    ("B. Cobertura dos commits de estagio", lambda r: r["fluxo_novo"]["grupos"]["B"]["cobertura_commits_estagio"]),
+] + [
+    ("B. Intervalo entre commits: %s (h)" % e,
+     (lambda e: lambda r: r["fluxo_novo"]["grupos"]["B"]["tempo_por_estagio_horas"][e])(e))
+    for e in ORDEM_NOVA[1:]
+] + [
     ("B. Retrabalho (estagio repetido)", lambda r: r["fluxo_novo"]["grupos"]["B"]["retrabalho_estagio_repetido"]),
     ("B. Rodadas build", lambda r: r["fluxo_novo"]["grupos"]["B"]["rodadas_build"]),
     ("B. Rodadas verify", lambda r: r["fluxo_novo"]["grupos"]["B"]["rodadas_verify"]),
@@ -951,26 +1027,29 @@ LINHAS_TABELA_NOVO = [
     ("C. Refutados / candidatos", lambda r: r["fluxo_novo"]["grupos"]["C"]["refutados_sobre_candidatos"]),
     ("C. Atencao por task", lambda r: r["fluxo_novo"]["grupos"]["C"]["atencao_por_task"]),
     ("D. DoD com 5 categorias", lambda r: r["fluxo_novo"]["grupos"]["D"]["dod_5_categorias"]),
-    ("D. Contrato com C1", lambda r: r["fluxo_novo"]["grupos"]["D"]["contrato_com_c1"]),
+    ("D. Contrato valido (C1, ou fatia que cita C<n>/a mae)", lambda r: r["fluxo_novo"]["grupos"]["D"]["contrato_valido"]),
     ("D. Prova com dado real", lambda r: r["fluxo_novo"]["grupos"]["D"]["prova_com_dado_real"]),
     ("D. Registro em formato valido", lambda r: r["fluxo_novo"]["grupos"]["D"]["registro_formato_valido"]),
     ("D. Skips com motivo", lambda r: r["fluxo_novo"]["grupos"]["D"]["skips_com_motivo"]),
 ]
 LINHAS_TABELA_ANTIGO = [
     ("Tasks ativas", lambda r: r["fluxo_antigo"]["tasks"]),
-    ("B. Tempo total (h)", lambda r: r["fluxo_antigo"]["grupos"]["B"]["tempo_total_horas"]),
-    ("B. Retrabalho (revisada repetida)", lambda r: r["fluxo_antigo"]["grupos"]["B"]["retrabalho_revisada_repetida"]),
+    ("B. Intervalo registrado no vault (h), do primeiro commit da task ao concluida",
+     lambda r: r["fluxo_antigo"]["grupos"]["B"]["intervalo_registrado_horas"]),
+    ("B. Retrabalho (revisao repetida)", lambda r: r["fluxo_antigo"]["grupos"]["B"]["retrabalho_revisao_repetida"]),
 ]
 
 
 def fora_do_padrao(res):
-    """Top 3 do mes: pontos = retrabalho + desvios + paradas; desempate pelo maior tempo total."""
+    """Top 3 do mes: pontos = retrabalho + desvios + paradas; desempate pelo maior intervalo registrado.
+
+    O defeito escapado (experimental) nao entra no criterio."""
     g = res["fluxo_novo"]["grupos"]
     ids = set(res["fluxo_novo"]["tasks"]["ids"])
     rep = g["B"]["retrabalho_estagio_repetido"].get("detalhe", {})
     desv = g["A"]["desvios_por_task"].get("detalhe", {})
     par = g["A"]["paradas_bloqueada"].get("detalhe", {})
-    tt = g["B"]["tempo_total_horas"].get("detalhe", {})
+    tt = g["B"]["intervalo_registrado_horas"].get("detalhe", {})
     linhas = []
     for i in ids:
         pts = rep.get(i, 0) + desv.get(i, 0) + par.get(i, 0)
@@ -978,7 +1057,7 @@ def fora_do_padrao(res):
     linhas.sort(key=lambda x: (-x[0], -x[1], x[2]))
     return [
         {"id": i, "pontos": p, "retrabalho": rep.get(i, 0), "desvios": desv.get(i, 0),
-         "paradas": par.get(i, 0), "tempo_total_h": tt.get(i)}
+         "paradas": par.get(i, 0), "intervalo_registrado_h": tt.get(i)}
         for p, _t, i in linhas[:3] if p > 0 or tt.get(i)
     ]
 
@@ -995,17 +1074,19 @@ def gerar_markdown(dados):
     out.append("")
     out.append("## Resumo")
     out.append("")
-    tt = g["B"]["tempo_total_horas"]["valor"]
+    tt = g["B"]["intervalo_registrado_horas"]["valor"]
     alt = g["A"]["contrato_ou_dod_alterado_apos_design"]
     resumo = [
         "- Tasks com atividade: %d no fluxo novo, %d no fluxo antigo." % (
             atual["fluxo_novo"]["tasks"]["n"], atual["fluxo_antigo"]["tasks"]["n"]),
-        "- Tempo total (fluxo novo, concluidas no mes): %s." % (
-            "mediana %s h, N=%d" % (tt["mediana"], g["B"]["tempo_total_horas"]["n"]) if tt else "sem dado"),
+        "- Intervalo registrado no vault (fluxo novo, concluidas no mes): %s; nao e tempo de trabalho "
+        "(cobertura dos commits de estagio: %s)." % (
+            "mediana %s h, N=%d" % (tt["mediana"], g["B"]["intervalo_registrado_horas"]["n"]) if tt else "sem dado",
+            fmt(g["B"]["cobertura_commits_estagio"])),
         "- Retrabalho: %d tasks com estagio repetido; Contrato/DoD alterado apos Design: %s." % (
             g["B"]["retrabalho_estagio_repetido"]["n"], fmt(alt)),
-        "- Defeito escapado (aproximado): %d; problemas depois do Verify: %d tasks." % (
-            g["A"]["defeito_escapado"]["valor"], g["C"]["problemas_depois_do_verify"]["n"]),
+        "- Bloqueantes no Verify: %d; problemas depois do Verify (CI vermelho, CHANGES_REQUESTED): %d tasks." % (
+            g["C"]["bloqueantes_no_verify"]["valor"], g["C"]["problemas_depois_do_verify"]["n"]),
         "- Registro em formato valido: %s; skips com motivo: %s." % (
             fmt(g["D"]["registro_formato_valido"]), fmt(g["D"]["skips_com_motivo"])),
     ]
@@ -1014,7 +1095,9 @@ def gerar_markdown(dados):
     for titulo, linhas, nota in (
         ("Fluxo novo: mes x meses anteriores", LINHAS_TABELA_NOVO, None),
         ("Fluxo antigo (linha de base): mes x meses anteriores", LINHAS_TABELA_ANTIGO,
-         "Sem Registro: so tempo total (nova -> concluida) e retrabalho (revisada repetida)."),
+         "Sem Registro: so o intervalo registrado no vault e o retrabalho (revisao repetida). "
+         "O aviso tambem vale aqui: " + AVISO_INTERVALO + ". "
+         "Retrabalho: " + REGRA_REVISAO_ANTIGA + "."),
     ):
         out.append("## %s" % titulo)
         out.append("")
@@ -1028,18 +1111,21 @@ def gerar_markdown(dados):
         out.append("")
     out.append("Formato: `med X (min-max; N)` para tempos e contagens; `k de N` quando N < %d (sem percentual)." % N_MINIMO_PERCENTUAL)
     out.append("")
+    out.append("Intervalos em horas vem dos commits do vault e " + AVISO_INTERVALO + ". "
+               "O intervalo de um estagio so e calculado entre o commit do estagio anterior e o dele, quando os dois existem.")
+    out.append("")
     out.append("## 3 tasks mais fora do padrao (%s)" % atual["mes"])
     out.append("")
-    out.append("Criterio: pontos = retrabalho (commits a mais do mesmo estagio) + desvios (linha build) + paradas (bloqueada). Empate: maior tempo total.")
+    out.append("Criterio: pontos = retrabalho (commits a mais do mesmo estagio) + desvios (linha build) + paradas (bloqueada). Empate: maior intervalo registrado.")
     out.append("")
     top = dados["fora_do_padrao"]
     if top:
-        out.append("| ID | Pontos | Retrabalho | Desvios | Paradas | Tempo total (h) |")
+        out.append("| ID | Pontos | Retrabalho | Desvios | Paradas | Intervalo registrado (h) |")
         out.append("| --- | --- | --- | --- | --- | --- |")
         for t in top:
             out.append("| %s | %d | %d | %d | %d | %s |" % (
                 t["id"], t["pontos"], t["retrabalho"], t["desvios"], t["paradas"],
-                "-" if t["tempo_total_h"] is None else t["tempo_total_h"]))
+                "-" if t["intervalo_registrado_h"] is None else t["intervalo_registrado_h"]))
     else:
         out.append("Nenhuma task com pontos no mes.")
     out.append("")
@@ -1059,6 +1145,17 @@ def gerar_markdown(dados):
         ", ".join(pr["ci_vermelho"]) or "-"))
     out.append("")
     out.append("Detalhe completo (valores por ID): `metricas-%s.json`." % atual["mes"])
+    out.append("")
+    out.append("## Experimental")
+    out.append("")
+    out.append("Fora do resumo, da tabela e do criterio das 3 tasks fora do padrao. So para acompanhar.")
+    out.append("")
+    for p in dados["periodos"]:
+        esc = p["fluxo_novo"]["experimental"]["defeito_escapado"]
+        out.append("- Defeito escapado (aproximado), %s: %d fixes (%s)" % (
+            p["mes"], esc["valor"], ", ".join(esc["ids"]) or "-"))
+    out.append("")
+    out.append("Por que: " + MOTIVO_EXPERIMENTAL + ".")
     out.append("")
     out.append("Gerado por script elaborado com suporte de IA - Revisado por [Nome do Responsavel]")
     out.append("")

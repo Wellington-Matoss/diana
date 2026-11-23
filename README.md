@@ -290,10 +290,12 @@ O config (modelo em `scripts/metricas.config.example.json`) tem o caminho do vau
 
 O que mede, em quatro grupos, separando fluxo novo (com Registro) e fluxo antigo (linha de base, só tempo total e retrabalho):
 
-- **A nota acertou?** Contrato ou Definição de pronto alterados depois do commit `<ID>: design`, desvios, paradas em `bloqueada`, defeito escapado (aproximado).
-- **O fluxo andou bem?** Tempo total e por estágio (commits do vault), retrabalho, autonomia do Build ao Ship, dados do PR via `gh`.
+- **A nota acertou?** Contrato ou Definição de pronto alterados depois do commit `<ID>: design`, desvios, paradas em `bloqueada`.
+- **O fluxo andou bem?** Intervalo registrado no vault (do primeiro commit ao `concluida`) e entre commits de estágios consecutivos, cobertura dos commits de estágio, retrabalho, autonomia do Build ao Ship, dados do PR via `gh`. Os intervalos **não são tempo de trabalho**: nem todo estágio ganha commit e os commits saem em rajada.
 - **O Verify acertou?** Bloqueantes no Verify contra problemas achados depois, refutados sobre candidatos, itens de Atenção.
-- **A nota está bem formada?** As 5 categorias da Definição de pronto, `C1` no Contrato, Prova com dado real, Registro em formato válido, skips com motivo.
+- **A nota está bem formada?** As 5 categorias da Definição de pronto, Contrato válido (`C1`, ou fatia de épico que cita um `C<n>` ou a nota-mãe), Prova com dado real, Registro em formato válido, skips com motivo.
+
+O defeito escapado (task `fix` que cita task concluída há pouco) sai só no JSON e numa seção "Experimental": por ora tem ruído demais para comparar meses.
 
 A saída tem só IDs e números, nunca texto da nota. Com N < 10, não há percentual: só a contagem e os IDs.
 
