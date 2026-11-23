@@ -6,7 +6,7 @@ Esta skill adapta ideias e trechos (traduzidos e resumidos) de:
   https://github.com/mattpocock/skills
   Skills usadas como base: `grilling`, `domain-modeling`, `to-spec`, `to-tickets`, `wayfinder`, `to-questionnaire`, `diagnosing-bugs`, `research`.
 
-- **pstack** - MIT License, Copyright (c) 2026 Lauren Tan.
+- **pstack** - MIT License, Copyright (c) 2026 Lauren Tan; port para Claude Code: Copyright (c) 2026 Michael Denyer.
   https://github.com/cursor/plugins/tree/main/pstack (port para Claude Code: https://github.com/michael-denyer/pstack-claude)
   Skills usadas como base: `how`, `why`, `teach`, `poteto-mode` (roteamento por playbook, convencao `skip: motivo`), playbooks `bug-fix`, `refactoring`, `feature`, `investigation`.
 

@@ -6,9 +6,13 @@ Esta skill adapta ideias e trechos (traduzidos e resumidos) de:
   https://github.com/mattpocock/skills
   Base: `code-review` (dois eixos, Padroes e Spec, em subagentes paralelos de contexto limpo; lista base de cheiros de Fowler como julgamento; padrao do repositorio prevalece).
 
-- **pstack** - MIT License, Copyright (c) 2026 Lauren Tan.
+- **pstack** - MIT License, Copyright (c) 2026 Lauren Tan; port para Claude Code: Copyright (c) 2026 Michael Denyer.
   https://github.com/cursor/plugins/tree/main/pstack (port para Claude Code: https://github.com/michael-denyer/pstack-claude)
-  Base: `create-verification-skill` (Launch, Doctor, Drive, Evidence, Cleanup, mapa de funcionalidades), `interrogate` (so sobrevive achado provado por execucao), `blast-radius` (fato que torna a mudanca segura, escala de certeza), `benchmark-checklist` (perguntas de numeros), `thermo-nuclear-code-quality-review` (duas regras usadas como julgamento), principio `prove-it-works`.
+  Base: `create-verification-skill` (Launch, Doctor, Drive, Evidence, Cleanup, mapa de funcionalidades), `interrogate` (so sobrevive achado provado por execucao), `blast-radius` (fato que torna a mudanca segura, escala de certeza), `benchmark-checklist` (perguntas de numeros), principio `prove-it-works`.
+
+- **cursor-team-kit** - MIT License, Copyright (c) 2026 Cursor.
+  https://github.com/cursor/plugins/tree/main/cursor-team-kit (plugin irmao do pstack, no mesmo repositorio)
+  Base: `thermo-nuclear-code-quality-review` (duas regras usadas como julgamento; a mesma skill tambem esta no plugin `thermos`).
 
 Metodo "quem acha nao julga, quem julga precisa provar", piramide de lentes e regras de economia: do comando `task-review` do autor deste fluxo.
 

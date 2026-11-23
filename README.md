@@ -286,10 +286,11 @@ A fonte da verdade continua sendo a nota (`status` e `estagio` no frontmatter); 
 
 ## Créditos e licenças
 
-O fluxo adapta ideias e trechos (traduzidos e resumidos) de duas coleções de skills, ambas sob licença MIT:
+O fluxo adapta ideias e trechos (traduzidos e resumidos) de três coleções de skills, todas sob licença MIT:
 
 - **[mattpocock/skills](https://github.com/mattpocock/skills)**, de Matt Pocock: entrevista em rodadas, modelagem de domínio, spec, fatias verticais, mapa de decisões, protótipos, design de módulos profundos, TDD, diagnóstico de bugs, revisão em dois eixos, formato de PR, retrospectiva.
 - **[pstack](https://github.com/cursor/plugins/tree/main/pstack)**, de Lauren Tan (port para Claude Code: [pstack-claude](https://github.com/michael-denyer/pstack-claude)): `how`/`why`/`teach`, playbooks por tipo, `architect`, TDD pragmático, limpeza do diff, skill de verificação do app, ataque ao diff, raio de impacto, números, acompanhamento de PR.
+- **[cursor-team-kit](https://github.com/cursor/plugins/tree/main/cursor-team-kit)**, plugin irmão do pstack (Cursor, MIT): `deslop` (limpeza do diff), `fix-ci`, `make-pr-easy-to-review`, `thermo-nuclear-code-quality-review`.
 
 Cada skill tem um `NOTICE.md` com o detalhe do que foi adaptado e uma pasta `licencas/` com o texto das licenças. As licenças MIT exigem manter o aviso de copyright e o texto da licença em cópias ou partes substanciais. Confirme os termos vigentes nos repositórios de origem. Isto não é parecer jurídico.
 
