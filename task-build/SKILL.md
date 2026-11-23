@@ -84,7 +84,7 @@ O subagente:
 
 - segue as etapas do Design na ordem;
 - em cada etapa, aplica o ciclo de `referencias/tdd.md` para cada teste do plano daquela etapa;
-- ao fim de cada etapa, com a suite verde, faz **um commit local**;
+- ao fim de cada etapa, com a suite verde, faz **um commit local** (excecao: fix, ver "Por tipo");
 - devolve o relatorio no formato do brief, com a evidencia de cada teste (saida vermelha e verde).
 
 ## 4. Conferir (lider)
@@ -97,7 +97,7 @@ Nao aceite o relatorio sem conferir:
    - [ ] o relatorio mostra o vermelho **pelo motivo certo** antes do verde;
    - [ ] arquivos alterados estao dentro do que a etapa previa (ou o desvio esta registrado);
    - [ ] nenhum item do Contrato mudou (rota, formato, status, campo gravado, permissao, log).
-2. **Testes do plano intactos:** compare os testes com o plano. Assercao enfraquecida, esperado trocado, teste pulado (`skip`, `only`, `todo`) ou teste do plano removido = reprovado.
+2. **Testes do plano intactos:** compare os testes com o plano. Assercao enfraquecida, esperado trocado, teste pulado (`skip`, `only`, `todo`) ou teste do plano removido = reprovado. No fix, nenhum teste do plano termina como falha esperada: a marca do commit de reproducao sai no commit da correcao.
 3. **Rode voce mesmo:** suite completa, lint e build. Compare com a linha de base. Apontamento novo de lint nos arquivos tocados = reprovado. Apontamento que pode ser decisao de dominio: escolha a opcao conservadora, registre e marque "Atencao".
 4. **Reprovado:** dispare um **subagente novo** com o brief original + a lista objetiva do que falhou (nao continue o subagente anterior). Maximo de 2 rodadas; na segunda, aplique a regra de modelo. Persistiu: caso 4 de "Quando parar".
 
@@ -120,6 +120,6 @@ Limpeza nao e refatoracao: nao mude estrutura que o Design nao previu.
 
 | Tipo        | Regras do Build                                                                                                                                                                                                                                                                                                             |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| fix         | O primeiro commit e o teste de reproducao vermelho; o seguinte e a correcao. Se nao existe seam certo para o teste de regressao, isso e um achado: registre e use o ciclo de feedback do Plan como verificacao. Remova todo log de debug marcado (`[DEBUG-...]`). A causa confirmada vai na mensagem do commit da correcao. |
+| fix         | O primeiro commit e o teste de reproducao, **vermelho de proposito**: e a prova, no historico, de que o teste pega o bug. E a unica excecao a regra de commit com a suite verde. Se o projeto tem hook de pre-commit que roda os testes, marque o teste como falha esperada (`test.fails`, `xfail`) nesse commit, sem linha nos debitos (a marca e temporaria). O commit seguinte e a correcao, com a suite verde e o teste ja sem a marca. Se nao existe seam certo para o teste de regressao, isso e um achado: registre e use o ciclo de feedback do Plan como verificacao. Remova todo log de debug marcado (`[DEBUG-...]`). A causa confirmada vai na mensagem do commit da correcao. |
 | refatoracao | Etapa 1 = trava de comportamento, verde **antes** de mover estrutura. Testes existentes nao mudam. Toda etapa termina com a trava verde.                                                                                                                                                                                    |
 | feature     | Um teste por criterio, na ordem do plano. Parte sem teste automatizado possivel (ex.: componente sem base de teste): implemente sem teste, registre "comprovacao no Verify" e confira que a linha "Comprovacao no app" do Design existe.                                                                                    |

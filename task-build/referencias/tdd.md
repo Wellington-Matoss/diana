@@ -10,7 +10,7 @@ Para **cada teste** do plano de testes da etapa, nesta ordem:
 4. **Rode e veja passar.** Guarde a saida.
 5. Rode a suite do modulo. Tudo verde: proximo teste.
 
-Ao fim da etapa: suite completa verde + type check (se houver) -> commit local.
+Ao fim da etapa: suite completa verde + type check (se houver) -> commit local. Excecao: no fix, o teste de reproducao tem commit proprio antes da correcao, vermelho ou marcado como falha esperada (ver "Por tipo" no SKILL.md).
 
 Se o teste ja passa no passo 2 (ex.: teste de nao regressao do comportamento vizinho), registre "verde de inicio: protege comportamento existente" e siga.
 

@@ -18,7 +18,7 @@ Voce implementa a task <ID> - <nome curto>.
 ## O que fazer
 1. Siga as etapas do Design na ordem.
 2. Para cada teste planejado da etapa: escreva o teste -> veja falhar pelo motivo certo -> codigo minimo -> veja passar. Guarde as duas saidas.
-3. Fim da etapa: suite verde -> commit local no padrao `tipo(escopo): assunto` com rodape `Task: <ID>` (ver `task-ship/referencias/commits.md`). Fix: o teste vermelho e um commit `test(...)`, a correcao e um commit `fix(...)` com a causa no corpo.
+3. Fim da etapa: suite verde -> commit local no padrao `tipo(escopo): assunto` com rodape `Task: <ID>` (ver `task-ship/referencias/commits.md`). Fix: o teste de reproducao e um commit `test(...)` antes da correcao, vermelho (com hook que roda testes, marcado como falha esperada); a correcao e um commit `fix(...)` com a causa no corpo, a suite verde e o teste sem a marca.
 4. Regras do tipo <tipo>: <linha da tabela "Por tipo" do SKILL.md>
 
 ## Desvios

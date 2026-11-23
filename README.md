@@ -218,7 +218,7 @@ As skills **não citam nenhum projeto**. Tudo o que é específico vem do contex
 Checklist do contexto que as skills leem (memória do agente ou `CLAUDE.md`):
 
 - [ ] **Vault:** caminho, pasta de tasks (pendentes e concluídas), prefixo de ID, glossário, notas de arquitetura, decisões, lista de débitos técnicos, nota de lições do fluxo, verificação automática (se houver)
-- [ ] **Git:** branch base, convenção de nome de branch, branches protegidas, repositórios do projeto
+- [ ] **Git:** branch base, convenção de nome de branch, branches protegidas, estratégia de merge (squash recomendado: o commit vermelho do fix não chega à base), repositórios do projeto
 - [ ] **Repositórios sem PR:** quais publicam direto na branch principal (ex.: o vault), com qual ferramenta e com qual vocabulário de mensagem de commit por estágio
 - [ ] **Comandos** por subprojeto: teste, lint, build, type check
 - [ ] **Testes:** guia de testes, banco de teste, limitações conhecidas (ex.: sem teste de componente)

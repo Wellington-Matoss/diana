@@ -112,7 +112,7 @@ Leia `referencias/vocabulario.md`.
   2. a parte de maior risco ou incerteza;
   3. o resto.
 - Cada etapa diz: **o que muda**, **onde** (modulos), **qual teste fica verde** ao fim dela.
-- Cada etapa termina com a suite verde. Teste, lint e build nao sao etapas separadas: fazem parte de cada etapa.
+- Cada etapa termina com a suite verde (excecao: o commit do teste de reproducao no fix, ver "Por tipo" do /task-build). Teste, lint e build nao sao etapas separadas: fazem parte de cada etapa.
 - Etapa bem escrita e uma instrucao clara para o subagente do Build.
 
 ## 7. Escrever e aprovar
