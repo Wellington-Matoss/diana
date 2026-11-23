@@ -103,6 +103,6 @@ Formato: problema, onde aparece, proposta, beneficio, esforco estimado (P/M/G).
 1. Preencha a secao `## Verificacao` da nota com `templates/verificacao.md`.
 2. Se o codigo divergiu do Entendimento ou do Design, atualize o **Entendimento** para refletir o que foi construido.
 3. Escreva o **resumo do diff para o PR** (ate ~100 palavras, sem `arquivo:linha`): o que mudou (comportamento), onde mexeu (por area), o que divergiu do plano e por que, ou "nada divergiu".
-4. Frontmatter: `estagio: verify`, `atualizado`. Escreva a linha `verify` no "Registro de etapas", no formato do template da spec.
+4. Frontmatter: `estagio: verify`, `atualizado`. Escreva a linha `verify` no "Registro de etapas", no formato do template da spec. `candidatos` e o total depois da deduplicacao; `refutados` sai desse total.
 5. Sincronize o vault.
 6. **Encerre com a linha de resultado.** A ultima linha da resposta e `RESULTADO: verify concluido - <bloqueantes corrigidos N, atencao N>`. Nao chame o `/task-ship`: as skills do fluxo so rodam quando chamadas de fora. O orquestrador le essa linha e o estado da nota e chama o proximo estagio.

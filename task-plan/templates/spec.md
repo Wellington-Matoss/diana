@@ -64,9 +64,10 @@ tags: [task]
 <preenchido pelo /task-design>
 
 ## Registro de etapas
-<uma linha por estagio, neste formato exato (separador " · "), para leitura por script. Ao rodar de novo, o estagio reescreve a propria linha.>
+<uma linha por estagio, neste formato exato (separador " · "), para leitura por script. Valores sempre em minusculo. Ao rodar de novo, o estagio reescreve a propria linha.>
 - plan: concluido em <AAAA-MM-DD> · tipo <tipo> · tamanho <tamanho> · prova <feita|nao se aplica|indisponivel> · skips: <lista ou nenhum>
 - design: concluido em <AAAA-MM-DD> · prototipos <N> · etapas <N> · skips: <lista ou nenhum>
-- build: concluido em <AAAA-MM-DD> · modelo <modelo> · rodadas <N> · desvios <N> · falhas esperadas <N> · skips: <lista ou nenhum>
-- verify: concluido em <AAAA-MM-DD> · modo <leve|completo> · rodadas <N> · bloqueantes <N> · atencao <N> · refutados <N> · skips: <lista ou nenhum>
+- build: concluido em <AAAA-MM-DD> · modelo <sonnet|opus|fable|haiku|sessao> · rodadas <N> · desvios <N> · falhas esperadas <N> · skips: <lista ou nenhum>
+- verify: concluido em <AAAA-MM-DD> · modo <leve|completo> · rodadas <N> · bloqueantes <N> · atencao <N> · candidatos <N> · refutados <N> · skips: <lista ou nenhum>
 - ship: concluido em <AAAA-MM-DD> · ci <verde|falhou|sem ci> · licoes <N> · skips: <lista ou nenhum>
+- close: concluido em <AAAA-MM-DD> · merge em <AAAA-MM-DD|sem pr> · debitos criados <N> · debitos removidos <N> · skips: <lista ou nenhum>

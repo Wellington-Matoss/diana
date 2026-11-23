@@ -19,6 +19,7 @@ O humano trabalha onde o julgamento dele é insubstituível: **decidir o que con
 - [O que cada projeto precisa fornecer](#o-que-cada-projeto-precisa-fornecer)
 - [Instalação](#instalação)
 - [Uso](#uso)
+- [Métricas](#métricas)
 - [Próximos passos](#próximos-passos)
 - [Créditos e licenças](#créditos-e-licenças)
 
@@ -143,7 +144,7 @@ Cada task é **uma nota** (Markdown, pensada para Obsidian) que atravessa todos 
 - **Contrato (`C1`, `C2`…):** o que outra parte do sistema, o banco ou o usuário enxerga e fica fixo: rota, formato, status, campo gravado, permissão, log. **Fora do Contrato, tudo é sugestão** e o agente decide sozinho; mudar o Contrato é mudar o *o quê*, e o agente para.
 - **Um lugar por fato:** regra ou valor por extenso só no Contrato; o resto da nota cita `ver C3`.
 - **Prova com dado real:** quando a task mexe em regra sobre dado que já existe, a premissa é testada contra o dado antes da entrevista, só em leitura e só com número agregado.
-- **Registro de etapas:** uma linha por estágio, em formato fixo (`build: concluido em … · modelo … · rodadas N · desvios N · …`), para medir o fluxo por script.
+- **Registro de etapas:** uma linha por estágio, em formato fixo (`build: concluido em … · modelo … · rodadas N · desvios N · …`), para medir o fluxo por script (ver [Métricas](#métricas)). O Close escreve a última linha, `close`, com a data do merge e os débitos criados e removidos.
 
 **Ciclo de vida** (frontmatter):
 
@@ -273,6 +274,30 @@ RESULTADO: <build|verify|ship> bloqueada - <caso de parada e motivo>
 ```
 
 A fonte da verdade continua sendo a nota (`status` e `estagio` no frontmatter); a linha só evita que o orquestrador interprete texto livre. Em `claude -p` não há como aprovar permissões durante a execução: libere antes os comandos de git, `gh`, teste, lint e build do projeto.
+
+---
+
+## Métricas
+
+`scripts/metricas.py` lê as notas de task e o histórico git do vault e gera um relatório mensal (`metricas-AAAA-MM.json` e `.md`). Só Python 3 com a biblioteca padrão; só leitura no vault; escreve apenas na pasta de saída.
+
+```text
+python scripts/metricas.py --config <arquivo.json> --mes AAAA-MM [--meses-anteriores 2] --saida <pasta> [--sem-gh]
+python -m unittest discover scripts/tests
+```
+
+O config (modelo em `scripts/metricas.config.example.json`) tem o caminho do vault, a pasta das tasks, os repositórios GitHub (`dono/repo`) e a janela do defeito escapado em dias (padrão 30). Entram no mês as tasks com commit do vault com o ID no mês ou com `concluida_em` no mês.
+
+O que mede, em quatro grupos, separando fluxo novo (com Registro) e fluxo antigo (linha de base, só tempo total e retrabalho):
+
+- **A nota acertou?** Contrato ou Definição de pronto alterados depois do commit `<ID>: design`, desvios, paradas em `bloqueada`, defeito escapado (aproximado).
+- **O fluxo andou bem?** Tempo total e por estágio (commits do vault), retrabalho, autonomia do Build ao Ship, dados do PR via `gh`.
+- **O Verify acertou?** Bloqueantes no Verify contra problemas achados depois, refutados sobre candidatos, itens de Atenção.
+- **A nota está bem formada?** As 5 categorias da Definição de pronto, `C1` no Contrato, Prova com dado real, Registro em formato válido, skips com motivo.
+
+A saída tem só IDs e números, nunca texto da nota. Com N < 10, não há percentual: só a contagem e os IDs.
+
+**Os indicadores servem para achar onde olhar, não são meta.** Número fora do padrão é convite para ler a nota, não nota de desempenho.
 
 ---
 
