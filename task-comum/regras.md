@@ -84,9 +84,10 @@ O estagio que conclui encerra com `RESULTADO: <estagio> concluido - <resumo>`, n
 Regras da retomada:
 
 - O estagio que parou encontra a nota com o `estagio` do estagio anterior e `status: ativa`: e a entrada normal do passo 0.
-- O Verify e o Ship retomados leem a propria secao (`Verificacao` ou `Entrega`, com a linha `Parada`) para saber o que ja foi feito.
+- **Verify e Ship sem mudanca de codigo** (casos 2 a 8): leem a propria secao (`Verificacao` ou `Entrega`, com a linha `Parada`) para saber o que ja foi feito.
+- **Verify e Ship com codigo novo** (depois do caso 1, ou com commit da task posterior a propria secao): rodam inteiros, do zero. Renomeie a secao antiga para `### Verificacao anterior (<AAAA-MM-DD>)` ou `### Entrega anterior (<AAAA-MM-DD>)` e nao a use como trabalho feito: e historico.
 - O estagio reescreve a propria linha do "Registro de etapas" quando conclui.
-- **Build retomado:** nao recria a branch. Depois do caso 1, refaz cada etapa marcada como alterada no Design (`[alterada em AAAA-MM-DD]`) e todas as que vem depois dela; as anteriores ficam. Os commits novos vao por cima, sem reescrever o historico, e a Execucao e reescrita para essas etapas. Nos demais casos (nenhuma etapa marcada), parte da primeira etapa sem commit conferido na Execucao.
+- **Build retomado:** nao recria a branch. Depois do caso 1, refaz cada etapa marcada como alterada no Design (`[alterada em AAAA-MM-DD]`) e todas as que vem depois dela; as anteriores ficam. Os commits novos vao por cima, sem reescrever o historico, e a Execucao e reescrita para essas etapas. Ao terminar de refazer, remove as marcas `[alterada em ...]` da lista de Etapas: o registro fica na Execucao, e uma parada posterior nao refaz as mesmas etapas. Nos demais casos (nenhuma etapa marcada), parte da primeira etapa sem commit conferido na Execucao.
 
 ## Correcao por subagente
 
