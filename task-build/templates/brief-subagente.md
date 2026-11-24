@@ -30,10 +30,8 @@ Voce implementa a task <ID> - <nome curto>.
 - A etapa le dado ja gravado e a Definicao de pronto nao tem frase para dado fora do padrao: NAO decida o comportamento. Registre no relatorio como ATENCAO: "dado gravado fora do padrao sem frase na Definicao de pronto".
 
 ## Pare e reporte se
-- cumprir uma frase exige mudar um item do Contrato, o escopo ou o produto;
-- o passo nao tem volta (dado real, branch protegida, apagar dados);
-- ha ambiguidade de seguranca ou permissao;
-- o mesmo erro persiste apos 2 tentativas.
+- ocorrer um dos casos 1, 2 ou 3 de "Quando parar" em <caminho>/task-comum/regras.md;
+- o mesmo erro persistir alem do limite do subagente (tabela "Limites de tentativas" do mesmo arquivo).
 
 ## Relatorio (formato obrigatorio)
 Por etapa:

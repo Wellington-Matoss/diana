@@ -191,12 +191,9 @@ A unidade que passa por Design → Build → Verify → Ship é sempre uma nota 
 
 ## Autonomia: quando o agente para
 
-Do Build ao Ship, o agente **não pergunta**: decide, registra o motivo e segue. Ele só para, marca a task como `bloqueada` e chama o humano quando:
+Do Build ao Ship, o agente **não pergunta**: decide, registra o motivo e segue. Ele só para, marca a task como `bloqueada` e termina com a linha `RESULTADO` quando o problema é de **o quê** (Contrato, escopo, produto), quando o passo não tem volta, quando há dúvida de segurança ou permissão, ou quando as tentativas de correção se esgotam. Problema de **como** não para o fluxo: um subagente novo corrige ali mesmo (correção por subagente).
 
-1. cumprir uma frase da Definição de pronto exige mudar **um item do Contrato, o escopo ou o produto**;
-2. o próximo passo **não tem volta** (dado real, branch protegida, apagar dados);
-3. há **ambiguidade de segurança ou permissão**;
-4. um **bloqueio técnico** persiste após 2 rodadas de correção.
+A lista completa dos casos, os casos próprios do Ship, os limites de tentativas por estágio, o formato da saída e a reentrada ficam num lugar só: [`task-comum/regras.md`](task-comum/regras.md).
 
 O que precisa do olho humano, mas não justifica parar, vai para a seção **Atenção** do PR.
 

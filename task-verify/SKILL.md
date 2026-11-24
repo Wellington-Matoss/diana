@@ -25,18 +25,17 @@ Nota (build concluido) -> 1 Preparar -> 2 App real -> 3 Revisar (paralelo) -> 4 
 
 ## Quando parar
 
-Igual ao Build. Pare, registre `status: bloqueada` com o motivo e encerre com `RESULTADO: verify bloqueada - <caso e motivo>` (ver passo 6) **somente** se:
+Siga "Quando parar", "Limites de tentativas" e "Saida de toda parada" de `../task-comum/regras.md`. O Verify nao tem caso proprio.
 
-1. cumprir um criterio exige mudar **escopo ou produto**;
-2. o proximo passo **nao tem volta** (dado real, branch protegida, apagar dados);
-3. ha **ambiguidade de seguranca ou permissao** que nenhuma decisao registrada resolve;
-4. o mesmo bloqueante persiste apos **2 rodadas** de volta ao Build.
+No Verify, o caso 1 aparece quando corrigir um bloqueante exige mudar um item do Contrato, o escopo ou o produto. O caso 4 aparece quando o mesmo bloqueante persiste depois do limite da correcao por subagente.
 
 ## Contexto do projeto
 
 Leia da memoria do agente e do `CLAUDE.md`: comandos de teste e lint; branch base; documentos de padrao do repositorio; **lentes proprias do projeto** (ex.: "acao de negocio precisa gerar log de auditoria"); skill `verify` do projeto e ambiente de verificacao; lista de debitos tecnicos.
 
 ## 0. Conferir a entrada
+
+Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de resultado.
 
 - Sem argumento: resolva a task ativa como no Build.
 - A nota precisa ter `estagio: build` concluido. Senao, pare: o Build nao terminou.
@@ -78,7 +77,7 @@ Dispare os revisores **ao mesmo tempo**, cada um em contexto limpo, com os brief
 3. **Conferir antes de atacar:** rode na copia, sem nenhuma mudanca, os testes e o lint. O resultado precisa reproduzir a linha de base: os mesmos testes passando e os mesmos apontamentos de lint do passo 1 no workspace da task (a linha de base do Build mais o que a task mudou). Se nao reproduzir, o problema e a copia (configuracao, dependencias, caminho), nao o codigo: aplique "confira o metodo de observacao" de `referencias/app-real.md`. Nenhum achado tirado da copia vale ate ela reproduzir a linha de base.
 4. **Remover e registrar:** remova toda copia ate o fim do Verify. Registre na nota o local, o resultado da conferencia e a remocao.
 
-**Sem subagente.** Se nao for possivel disparar subagente, rode cada revisor deste passo e cada verificador do passo 4 numa passagem separada, em sequencia. Cada passagem rele do zero so o brief de `referencias/revisores.md`, o diff e a nota. Nao use conclusao de passagem anterior. O verificador nao reaproveita o raciocinio de quem achou o candidato. Registre o desvio "sem subagente" na nota. No modo completo, acrescente aos candidatos a Atencao: "revisao sem contexto separado". A volta ao Build do passo 5 segue "Sem subagente" do `/task-build` passo 3.
+**Sem subagente.** Siga "Sem subagente" de `../task-comum/regras.md`. No Verify, rode cada revisor deste passo e cada verificador do passo 4 numa passagem separada, em sequencia. Cada passagem rele do zero so o brief de `referencias/revisores.md`, o diff e a nota. O verificador nao reaproveita o raciocinio de quem achou o candidato. No modo completo, acrescente aos candidatos a Atencao: "revisao sem contexto separado". A volta ao Build do passo 5 segue "Sem subagente" do `/task-build` passo 3.
 
 ## 4. Julgar
 

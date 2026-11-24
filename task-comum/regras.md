@@ -22,7 +22,7 @@ Do Build ao Ship, o agente nao pergunta: decide, registra o motivo e segue. Ele 
 | ---- | ------- | ---------------------------------------------------------------------------- |
 | 5    | Ship    | o diff contem segredo, credencial, `.env` ou dado de cliente                 |
 | 6    | Ship    | integrar a base gera conflito na logica da task (conflito mecanico nao conta) |
-| 7    | Ship    | a autenticacao para push ou para abrir o PR nao esta disponivel              |
+| 7    | Ship    | a autenticacao para push, PR ou publicacao nao esta disponivel, ou a ferramenta de publicacao recusa |
 
 Todo o resto: escolha a opcao mais conservadora, registre o motivo e siga. O que precisa do olho do humano, mas nao justifica parar, vai para a Atencao do PR.
 
