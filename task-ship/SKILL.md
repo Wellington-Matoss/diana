@@ -67,7 +67,6 @@ Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de 
 2. Atras: faca merge da base na branch (nao rebase: preserva os commits ja verificados).
 3. Conflito **mecanico** (lockfile, import, formatacao, arquivos independentes): resolva. Conflito na **logica** da task: caso 6.
 4. Houve merge da base: rode de novo testes, lint e build. Vermelho: "Correcao por subagente" de `../task-comum/regras.md`, com o erro. Limite: tabela do mesmo arquivo; persistindo, caso 4.
-5. **Ataque antes do push.** Toda correcao de codigo no Ship (aqui ou no passo 6) passa, antes do push, pelo Atacante do diff sobre o diff da correcao, com o brief de `../task-verify/referencias/revisores.md` e numa copia isolada (ver "Copia isolada" do `/task-verify` passo 3). Achado provado por execucao: nova correcao, que conta na tabela de limites.
 
 ## 3. Changelog do projeto (se houver)
 
@@ -97,8 +96,8 @@ Projeto sem CI: `skip: projeto sem CI`.
 
 1. Espere os checks terminarem (`gh pr checks <pr> --watch`).
 2. Verde: siga.
-3. Falha **causada pelo diff**: leia o primeiro erro acionavel no log e aplique "Correcao por subagente" de `../task-comum/regras.md`, com o erro. Ataque antes do push (passo 2), push, espere de novo. Limite: tabela do mesmo arquivo; depois, caso 4.
-4. Falha **nao causada pelo diff** (instabilidade, infraestrutura, falha que ja existe na base): rode de novo, no limite da tabela. Persistindo: comente no PR com a evidencia e acrescente em "Atencao".
+3. Falha **causada pelo diff**: leia o primeiro erro acionavel no log e aplique "Correcao por subagente" de `../task-comum/regras.md`, com o erro (inclui o ataque a correcao antes do push). Push e espere de novo. Limite: tabela do mesmo arquivo; depois, caso 4.
+4. Falha **nao causada pelo diff** (instabilidade, infraestrutura, falha que ja existe na base): siga a nota "CI vermelho nao causado pelo diff" de `../task-comum/regras.md`. Persistindo, comente no PR com a evidencia.
 5. Nunca mude o esperado de um teste para o CI passar.
 
 ## 7. Atualizar a nota
@@ -137,6 +136,6 @@ Uma mensagem curta ao usuario:
 - Atencao: quantidade de itens (ou "nada");
 - Sugestoes para o projeto: quantidade (ou "nenhuma");
 - Licoes registradas: quantidade (ou "nenhuma");
-- lembrete: o merge e do usuario; depois do merge, `/task-close` (ou a rotina agendada) fecha a task.
+- lembrete: o merge e do usuario; depois do merge, o orquestrador chama o `/task-close <nota>`, ou uma rotina agendada fecha a task.
 
 A ultima linha da resposta e `RESULTADO: ship concluido - PR <url>` (com dois PRs, as duas URLs).

@@ -23,6 +23,7 @@
 | feliz | quando ..., entao ... | integracao | | C1, C2 | tela X, acao Y, ver Z |
 
 ### Etapas
+<!-- reaprovacao depois de parada "o que": marque cada etapa que mudou, ex.: "- [alterada em AAAA-MM-DD] 2. ..." -->
 1. <o que muda> - <onde> - fica verde: `<teste>`
 2. ...
 

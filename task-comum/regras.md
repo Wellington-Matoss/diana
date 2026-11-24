@@ -1,89 +1,103 @@
 # Regras comuns do fluxo
 
-Regras que valem para Build, Verify e Ship. Cada regra fica so aqui. As skills citam este arquivo e acrescentam so o que e proprio do estagio. Esta pasta nao e skill: nao tem `SKILL.md` e vai junto na instalacao.
+Regras que valem para os estagios que rodam sem o humano: Build, Verify, Ship e Close. Cada regra fica so aqui. As skills citam este arquivo e acrescentam so o que e proprio do estagio. Esta pasta nao e skill: nao tem `SKILL.md` e vai junto na instalacao.
 
 ## Quando parar
 
-Do Build ao Ship, o agente nao pergunta: decide, registra o motivo e segue. Ele para **somente** nos casos abaixo.
+Nesses estagios, o agente nao pergunta: decide, registra o motivo e segue. Ele para **somente** nos casos abaixo.
 
 **Casos comuns:**
 
-| Caso | Nome          | Quando                                                                                                                                         |
-| ---- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | entrada       | o passo 0 (conferencia de entrada) reprova: nota errada ou ambigua, estagio anterior nao concluido, dependencia nao concluida, branch errada |
-| 1    | o que         | cumprir uma frase da Definicao de pronto exige mudar **um item do Contrato, o escopo ou o produto**                                           |
-| 2    | sem volta     | o proximo passo nao tem volta: alterar dado real, escrever em branch protegida, force push, apagar dados                                      |
-| 3    | seguranca     | ha duvida de seguranca ou permissao (autenticacao, autorizacao, segredo, dado de cliente) que nenhuma decisao registrada resolve              |
-| 4    | tentativas    | o problema persiste depois do limite da tabela "Limites de tentativas" (codigo, ambiente, credencial, dependencia quebrada)                    |
+| Caso | Nome       | Quando                                                                                                                                                          |
+| ---- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | entrada    | o passo 0 (conferencia de entrada) reprova: nenhuma nota candidata, nota ambigua, estagio anterior nao concluido, dependencia nao concluida, branch errada |
+| 1    | o que      | cumprir uma frase da Definicao de pronto exige mudar **um item do Contrato, o escopo ou o produto**                                                            |
+| 2    | sem volta  | o proximo passo nao tem volta: alterar dado real, escrever em branch protegida, force push, apagar dados                                                       |
+| 3    | permissao  | ha duvida de seguranca ou permissao (autenticacao, autorizacao, acesso a dado) que nenhuma decisao registrada resolve, ou o ambiente negou uma permissao      |
+| 4    | tentativas | o problema persiste depois do limite da tabela "Limites de tentativas"                                                                                         |
 
 **Casos proprios do estagio:**
 
-| Caso | Estagio | Quando                                                                       |
-| ---- | ------- | ---------------------------------------------------------------------------- |
-| 5    | Ship    | o diff contem segredo, credencial, `.env` ou dado de cliente                 |
-| 6    | Ship    | integrar a base gera conflito na logica da task (conflito mecanico nao conta) |
-| 7    | Ship    | a autenticacao para push, PR ou publicacao nao esta disponivel, ou a ferramenta de publicacao recusa |
+| Caso | Nome             | Estagio      | Quando                                                                                                         |
+| ---- | ---------------- | ------------ | -------------------------------------------------------------------------------------------------------------- |
+| 5    | segredo          | Ship         | o diff contem segredo ou dado pessoal                                                                          |
+| 6    | conflito na base | Ship         | integrar a base gera conflito na logica da task (conflito mecanico nao conta)                                 |
+| 7    | autenticacao     | Ship e Close | a autenticacao para push, PR, consulta do PR ou publicacao nao esta disponivel, ou a ferramenta de publicacao recusa |
+| 8    | vault com erro   | Close        | a verificacao automatica do vault acusa erro numa nota que o Close tocou                                       |
+
+**Permissao negada pelo ambiente.** Sem humano na sessao, ninguem aprova uma permissao. Comando, pasta ou rede negados pelo ambiente param na hora, no caso 3, com o comando negado no motivo. Nao conta como tentativa de correcao e nao se tenta de novo.
 
 Todo o resto: escolha a opcao mais conservadora, registre o motivo e siga. O que precisa do olho do humano, mas nao justifica parar, vai para a Atencao do PR.
 
 ## Limites de tentativas
 
-Uma tentativa e uma correcao completa (ver "Correcao por subagente"). Passou do limite e o problema continua: caso 4.
+A unidade e a **tentativa de correcao**: uma correcao completa, conferida (ver "Correcao por subagente"; no Build, o passo 4). Cada linha conta separado. Passou do limite em qualquer linha e o problema continua: caso 4.
 
-| Estagio | O que conta                                                            | Limite                                      |
-| ------- | ---------------------------------------------------------------------- | ------------------------------------------- |
-| Build   | rodada de correcao depois da conferencia do lider (passo 4)            | 2                                           |
-| Build   | o mesmo erro dentro do subagente, numa rodada                          | 2 (o subagente para e reporta ao lider)    |
-| Build   | bloqueio de ambiente (credencial, dependencia, servico local)          | 2                                           |
-| Verify  | correcao por subagente dos bloqueantes                                 | 2                                           |
-| Ship    | correcao por subagente depois de integrar a base (teste, lint ou build vermelho) | 1                                 |
-| Ship    | correcao por subagente de CI vermelho causado pelo diff                | 3                                           |
-| Ship    | CI vermelho nao causado pelo diff                                      | 1 nova execucao; depois, Atencao (nao para) |
+| Estagio | Tentativa de correcao                                                 | Limite |
+| ------- | --------------------------------------------------------------------- | ------ |
+| Build   | nova passagem do subagente depois de uma reprovacao do lider (passo 4) | 2      |
+| Build   | correcao de bloqueio de ambiente (credencial, dependencia, servico local) | 2   |
+| Verify  | correcao por subagente dos bloqueantes                                | 2      |
+| Ship    | correcao por subagente depois de integrar a base                      | 1      |
+| Ship    | correcao por subagente de CI vermelho causado pelo diff               | 3      |
 
-Cada linha conta separado. Na segunda rodada do Build e da correcao por subagente, vale a regra de modelo do passo 2 do Build.
+**Modelo:** a segunda tentativa de correcao usa o modelo forte da tabela de modelo do Build (passo 2).
+
+Notas (nao sao linhas da tabela):
+
+- **Erro dentro do subagente:** o subagente tenta o mesmo erro no maximo 2 vezes e devolve o relatorio. Isso faz parte da tentativa do lider, nao e tentativa propria.
+- **CI vermelho nao causado pelo diff** (instabilidade, infraestrutura, falha que ja existe na base): uma nova execucao. Persistindo, vai para a Atencao do PR. Nao e tentativa de correcao e nao para.
 
 ## Saida de toda parada
 
 Toda parada termina com uma linha de resultado. Nenhuma parada fica sem ela.
 
-1. Nota escolhida: marque `status: bloqueada` e `atualizado`. Registre o caso e o motivo na secao do estagio (`Execucao`, `Verificacao` ou `Entrega`), numa linha `Parada: caso <n> - <motivo>`.
+1. Nota escolhida: marque `status: bloqueada` e `atualizado`. Registre o caso e o motivo na secao do estagio (`Execucao`, `Verificacao`, `Entrega` ou `Resultado`), numa linha `Parada: caso <n> - <motivo>`.
 2. Nao mude `estagio`: ele diz o ultimo estagio concluido. Quem diz qual estagio parou e a linha `Parada`, junto com `status: bloqueada` e a linha de resultado.
 3. Nao escreva a linha do estagio no "Registro de etapas": ela so nasce quando o estagio conclui.
 4. Parada depois do passo 0: registre na secao do estagio o que ja foi feito (no Build: as etapas conferidas, com o commit). A retomada parte dai.
-5. Sincronize o vault.
+5. Sincronize o vault, exceto no caso 8 (nao sincronize nota com erro).
 6. A ultima linha da resposta e:
 
 ```text
-RESULTADO: <build|verify|ship> bloqueada - caso <n> (<nome>): <motivo em uma linha>
+RESULTADO: <build|verify|ship|close> bloqueada - caso <n> (<nome>): <motivo em uma linha>
 ```
 
-Sem nota escolhida (passo 0 sem argumento e mais de uma candidata): nao altere nenhuma nota. Liste as candidatas no motivo: `RESULTADO: build bloqueada - caso 0 (entrada): nota ambigua: <nota 1>, <nota 2>`.
+Caso 0 por estagio anterior nao concluido: nao altere a nota. Ela pode estar no meio de outro estagio.
+
+Sem nota escolhida (passo 0 sem argumento, nenhuma candidata ou mais de uma): nao altere nenhuma nota. Liste as candidatas no motivo, ou diga que nao ha nenhuma: `RESULTADO: build bloqueada - caso 0 (entrada): nota ambigua: <nota 1>, <nota 2>`.
 
 O estagio que conclui encerra com `RESULTADO: <estagio> concluido - <resumo>`, no formato do passo final da skill.
 
+**Close:** uma parada vale so para a task em que ocorreu; o Close segue com as outras tasks da varredura. PR ainda aberto nao e parada: a task fica "ainda em revisao". A linha final e `RESULTADO: close concluido - fechadas <N>, em revisao <N>, pausadas <N>`, ou `RESULTADO: close bloqueada - caso <n> (<nome>): <IDs e motivo>` se alguma task parou.
+
 ## Reentrada depois de `bloqueada`
 
-| Caso                         | Quem resolve                                                                                                                                                                                                                       | Quem roda de novo                                                                                    |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| 1 (o que)                    | o humano roda `/task-plan <nota>` com o orquestrador. O Plan retoma a **mesma** nota e atualiza Contrato, Definicao de pronto e o que for preciso. Depois o humano roda `/task-design <nota>`, que revisa o Design e pede a aprovacao de novo | o Build, na mesma branch, a partir da ultima etapa concluida                                         |
-| demais (0, 2, 3, 4, 5, 6, 7) | o humano resolve (ambiente, permissao, conflito, entrada) e marca `status: ativa`                                                                                                                                                   | o orquestrador roda de novo o **mesmo** estagio que parou                                            |
+| Caso                       | Quem resolve                                                                                                                                                                                                                    | Quem roda de novo                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| 0, nota ambigua ou ausente | o humano indica a nota                                                                                                                                                                                                          | o orquestrador roda o mesmo estagio, com a nota como argumento        |
+| 0, estagio anterior nao concluido | ninguem: a nota nao foi alterada                                                                                                                                                                                         | o orquestrador roda o estagio anterior                                |
+| 0, demais (dependencia, branch) | o humano resolve e marca `status: ativa`                                                                                                                                                                                    | o mesmo estagio                                                       |
+| 1 (o que)                  | o humano roda `/task-plan <nota>` com o orquestrador. O Plan retoma a **mesma** nota e atualiza Contrato, Definicao de pronto e o que for preciso. Depois o humano roda `/task-design <nota>`, que revisa o Design e pede a aprovacao de novo | o Build, na mesma branch (ver "Regras da retomada")                   |
+| 2 a 8                      | o humano resolve (ambiente, permissao, conflito, vault) e marca `status: ativa` (no Close, `status: em-revisao`)                                                                                                                | o mesmo estagio que parou                                             |
 
 Regras da retomada:
 
 - O estagio que parou encontra a nota com o `estagio` do estagio anterior e `status: ativa`: e a entrada normal do passo 0.
 - O Verify e o Ship retomados leem a propria secao (`Verificacao` ou `Entrega`, com a linha `Parada`) para saber o que ja foi feito.
 - O estagio reescreve a propria linha do "Registro de etapas" quando conclui.
-- O Build retomado nao recria a branch e nao refaz etapa ja commitada e conferida na Execucao. Etapa que o Design reaprovado mudou conta como nao feita.
+- **Build retomado:** nao recria a branch. Depois do caso 1, refaz cada etapa marcada como alterada no Design (`[alterada em AAAA-MM-DD]`) e todas as que vem depois dela; as anteriores ficam. Os commits novos vao por cima, sem reescrever o historico, e a Execucao e reescrita para essas etapas. Nos demais casos (nenhuma etapa marcada), parte da primeira etapa sem commit conferido na Execucao.
 
 ## Correcao por subagente
 
 Problema de **como** (bloqueante do Verify, vermelho depois de integrar a base, CI vermelho pelo diff) nao volta ao estagio anterior. O estagio que achou o problema corrige ali mesmo:
 
-1. Dispare um **subagente novo** com o brief do Build (`../task-build/templates/brief-subagente.md`) e a lista objetiva do problema. Nao continue um subagente anterior.
+1. Dispare um **subagente novo** com o brief do Build no **modo correcao** (`../task-build/templates/brief-subagente.md`). Nao continue um subagente anterior.
 2. Confira a correcao como no passo 4 do Build: testes do plano intactos; rode de novo testes, lint e build e compare com a linha de base.
 3. Aplique a limpeza (b) de `../task-build/referencias/limpeza.md` sobre o diff da correcao.
-4. Cada commit da correcao tem o rodape `Task: <ID>` (`../task-ship/referencias/commits.md`).
-5. Confira de novo so o que motivou a correcao.
+4. **Ataque a correcao:** rode o Atacante do diff sobre o diff da correcao, com o brief de `../task-verify/referencias/revisores.md`, numa copia isolada (ver "Copia isolada" do `/task-verify` passo 3). No Ship, isso vem antes do push. Achado provado por execucao: nova tentativa de correcao.
+5. Cada commit da correcao tem o rodape `Task: <ID>` (`../task-ship/referencias/commits.md`).
+6. Confira de novo so o que motivou a correcao.
 
 Cada correcao conta uma tentativa na tabela de limites.
 

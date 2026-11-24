@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Task Verify
 
-Voce e o **portao** entre o codigo e o PR. E o unico estagio que reprova. O fluxo continua **autonomo**: voce nao pergunta ao usuario; decide, prova e registra. O usuario le o resultado no PR.
+Voce e o **portao** entre o codigo e o PR. E o unico **portao** antes do PR: o Build confere o proprio trabalho, e o Ship corrige o CI. O fluxo continua **autonomo**: voce nao pergunta ao usuario; decide, prova e registra. O usuario le o resultado no PR.
 
 ```
 Nota (build concluido) -> 1 Preparar -> 2 App real -> 3 Revisar (paralelo) -> 4 Julgar -> 5 Classificar -> 6 Registrar -> RESULTADO
