@@ -13,7 +13,7 @@ Nesses estagios, o agente nao pergunta: decide, registra o motivo e segue. Ele p
 | 0    | entrada    | o passo 0 (conferencia de entrada) reprova: nenhuma nota candidata, nota ambigua, estagio anterior nao concluido, dependencia nao concluida, branch errada |
 | 1    | o que      | cumprir uma frase da Definicao de pronto exige mudar **um item do Contrato, o escopo ou o produto**                                                            |
 | 2    | sem volta  | o proximo passo nao tem volta: alterar dado real, escrever em branch protegida, force push, apagar dados                                                       |
-| 3    | permissao  | ha duvida de seguranca ou permissao (autenticacao, autorizacao, acesso a dado) que nenhuma decisao registrada resolve, ou o ambiente negou uma permissao      |
+| 3    | seguranca ou permissao | ha duvida de seguranca ou permissao (autenticacao, autorizacao, acesso a dado) que nenhuma decisao registrada resolve, ou o ambiente negou uma permissao      |
 | 4    | tentativas | o problema persiste depois do limite da tabela "Limites de tentativas"                                                                                         |
 
 **Casos proprios do estagio:**
