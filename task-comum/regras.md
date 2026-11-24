@@ -102,7 +102,7 @@ Regras da retomada:
 Problema de **como** (bloqueante do Verify, vermelho depois de integrar a base, CI vermelho pelo diff) nao volta ao estagio anterior. O estagio que achou o problema corrige ali mesmo:
 
 1. Dispare um **subagente novo** com o brief do Build no **modo correcao** (`../task-build/templates/brief-subagente.md`). Nao continue um subagente anterior.
-2. Confira a correcao como no passo 4 do Build: testes do plano intactos; rode de novo testes, lint e build e compare com a linha de base. Registre o teste de regressao do relatorio (titulo `<frase> - regressao`) na secao "Desvios" do Design.
+2. Confira a correcao como no passo 4 do Build: testes do plano intactos; rode de novo testes, lint e build e compare com a linha de base. Registre o teste de regressao do relatorio na secao "Desvios" do Design (titulo: modo correcao do brief).
 3. Aplique a limpeza (b) de `../task-build/referencias/limpeza.md` sobre o diff da correcao.
 4. **Ataque a correcao:** rode o Atacante do diff sobre o diff da correcao, com o brief de `../task-verify/referencias/revisores.md`, numa copia isolada (ver "Copia isolada" do `/task-verify` passo 3). No Ship, isso vem antes do push. Achado provado por execucao: nova tentativa de correcao.
 5. Cada commit da correcao tem o rodape `Task: <ID>` (`../task-ship/referencias/commits.md`).
