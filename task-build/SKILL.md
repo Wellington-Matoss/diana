@@ -87,6 +87,8 @@ O subagente:
 - ao fim de cada etapa, com a suite verde, faz **um commit local** (excecao: fix, ver "Por tipo");
 - devolve o relatorio no formato do brief, com a evidencia de cada teste (saida vermelha e verde).
 
+**Sem subagente.** Se nao for possivel disparar subagente, o lider executa as etapas ele mesmo, com o mesmo ciclo de `referencias/tdd.md` e o mesmo relatorio do brief. O passo 4 continua igual, como se o trabalho fosse de outro: rode de novo testes, lint e build e compare os testes com o plano. A reprovacao vira uma nova passagem, com o brief original + a lista objetiva do que falhou. Registre o desvio "sem subagente" na nota.
+
 ## 4. Conferir (lider)
 
 Nao aceite o relatorio sem conferir:
