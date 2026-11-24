@@ -27,7 +27,7 @@ Siga "Quando parar", "Limites de tentativas" e "Saida de toda parada" de `../tas
 
 No Ship, o caso 2 aparece quando o push ou o PR exigiria acao sem volta ou em branch protegida. O caso 5 aparece no passo 1; o caso 6, no passo 2; o caso 7, nos passos 4 e 5. O caso 4 aparece quando a correcao por subagente dos passos 2 ou 6 passa do limite.
 
-**Sem subagente.** Siga "Sem subagente" de `../task-comum/regras.md`, como no paragrafo "Sem subagente" do `/task-build` passo 3: o proprio Ship faz a correcao numa passagem separada.
+**Sem subagente.** Siga "Sem subagente" de `../task-comum/regras.md`: o proprio Ship faz a correcao numa passagem separada.
 
 ## Contexto do projeto
 
