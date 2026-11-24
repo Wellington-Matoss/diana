@@ -164,7 +164,7 @@ stateDiagram-v2
     em_revisao --> pausada: PR fechado sem merge
 ```
 
-O campo `estagio` (`plan` → `design` → `build` → `verify` → `ship`) diz até onde a task chegou. Numa parada, o que muda em `status` e `estagio` está em `task-comum/regras.md`.
+O campo `estagio` (`plan` → `design` → `build` → `verify` → `ship`) diz até onde a task chegou. Uma parada não muda o `estagio`: muda só o `status` (ver `task-comum/regras.md`).
 
 ---
 

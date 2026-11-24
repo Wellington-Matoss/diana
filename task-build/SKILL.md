@@ -52,7 +52,7 @@ Alguns repositorios publicam direto na branch principal pela ferramenta do proje
 Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de resultado.
 
 - Sem argumento: se houver uma so task `ativa` com `estagio: design`, use-a. Se houver mais, tente casar pela branch atual. Se continuar ambiguo, pare e liste as notas candidatas na linha de resultado. Nao pergunte: nesta sessao ninguem responde.
-- A nota precisa ter `estagio: design` com aprovacao registrada, ou `estagio: build` com `status: ativa` (retomada, ver "Reentrada" de `../task-comum/regras.md`). Senao, pare: o Design nao foi aprovado.
+- A nota precisa ter `estagio: design` com aprovacao registrada. Senao, pare: o Design nao foi aprovado.
 - Notas de `depende-de` precisam estar `concluida`. Senao, pare.
 - Crie a lista de tarefas com os passos 1 a 6.
 

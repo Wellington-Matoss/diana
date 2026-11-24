@@ -47,9 +47,7 @@ Cada linha conta separado. Na segunda rodada do Build e da correcao por subagent
 Toda parada termina com uma linha de resultado. Nenhuma parada fica sem ela.
 
 1. Nota escolhida: marque `status: bloqueada` e `atualizado`. Registre o caso e o motivo na secao do estagio (`Execucao`, `Verificacao` ou `Entrega`), numa linha `Parada: caso <n> - <motivo>`.
-2. `estagio`:
-   - parada do passo 0 (caso 0): **nao mude**. A nota nao esta pronta para este estagio;
-   - parada depois do passo 0: `estagio: <este estagio>`.
+2. Nao mude `estagio`: ele diz o ultimo estagio concluido. Quem diz qual estagio parou e a linha `Parada`, junto com `status: bloqueada` e a linha de resultado.
 3. Nao escreva a linha do estagio no "Registro de etapas": ela so nasce quando o estagio conclui.
 4. Parada depois do passo 0: registre na secao do estagio o que ja foi feito (no Build: as etapas conferidas, com o commit). A retomada parte dai.
 5. Sincronize o vault.
@@ -72,7 +70,8 @@ O estagio que conclui encerra com `RESULTADO: <estagio> concluido - <resumo>`, n
 
 Regras da retomada:
 
-- O passo 0 de cada estagio aceita a nota com `status: ativa` e `estagio` igual ao proprio estagio (parada anterior), alem do caso normal.
+- O estagio que parou encontra a nota com o `estagio` do estagio anterior e `status: ativa`: e a entrada normal do passo 0.
+- O Verify e o Ship retomados leem a propria secao (`Verificacao` ou `Entrega`, com a linha `Parada`) para saber o que ja foi feito.
 - O estagio reescreve a propria linha do "Registro de etapas" quando conclui.
 - O Build retomado nao recria a branch e nao refaz etapa ja commitada e conferida na Execucao. Etapa que o Design reaprovado mudou conta como nao feita.
 
