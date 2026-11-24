@@ -286,16 +286,19 @@ python scripts/metricas.py --config <arquivo.json> --mes AAAA-MM [--meses-anteri
 python -m unittest discover scripts/tests
 ```
 
-O config (modelo em `scripts/metricas.config.example.json`) tem o caminho do vault, a pasta das tasks, os repositórios GitHub (`dono/repo`) e a janela do defeito escapado em dias (padrão 30). Entram no mês as tasks com commit do vault com o ID no mês ou com `concluida_em` no mês.
+O config (modelo em `scripts/metricas.config.example.json`) tem o caminho do vault, a pasta das tasks, a pasta das concluídas, o ramo do git do vault (padrão `main`) e os repositórios GitHub (`dono/repo`).
 
-O que mede, em quatro grupos, separando fluxo novo (com Registro) e fluxo antigo (linha de base, só tempo total e retrabalho):
+**Mesmas definições do painel de confiança.** Quatro indicadores usam exatamente as regras do `.scripts/confianca.py` do vault e saem marcados "(mesma definição do confianca.py)": revisão sem bloqueante, divergências por task, horas do início ao PR e escapes. O recorte também é o dele: notas da pasta de concluídas pela `concluida_em` no mês, fluxo novo e antigo somados, épico, mapa e decisão fora. Mudou a regra lá, mude aqui.
 
-- **A nota acertou?** Contrato ou Definição de pronto alterados depois do commit `<ID>: design`, desvios, paradas em `bloqueada`.
-- **O fluxo andou bem?** Intervalo registrado no vault (do primeiro commit ao `concluida`) e entre commits de estágios consecutivos, cobertura dos commits de estágio, retrabalho, autonomia do Build ao Ship, dados do PR via `gh`. Os intervalos **não são tempo de trabalho**: nem todo estágio ganha commit e os commits saem em rajada.
-- **O Verify acertou?** Bloqueantes no Verify contra problemas achados depois, refutados sobre candidatos, itens de Atenção.
+- **Escapes:** fix concluído no mês com `origem` = ID de task conta como escape daquela task. Fix sem `origem`, ou com `anterior ao fluxo` ou `externa`, fica fora da conta e aparece em "sem dado".
+- **Horas do início ao PR:** do 1º commit `<ID>: plan` ou `<ID>: design` ao 1º `<ID>: ship` (novo); do 1º `<ID>: nova task` ao 1º `PR aberto` ou `publicada` (antigo).
+
+Os demais indicadores contam as tasks com atividade no mês (commit do vault com o ID ou `concluida_em` no mês), em quatro grupos, separando fluxo novo (com Registro) e fluxo antigo (só retrabalho):
+
+- **A nota acertou?** Contrato ou Definição de pronto alterados depois do commit `<ID>: design`, paradas em `bloqueada`.
+- **O fluxo andou bem?** Intervalo entre commits de estágios consecutivos, cobertura dos commits de estágio, retrabalho, autonomia do Build ao Ship, dados do PR via `gh`. Os intervalos **não são tempo de trabalho**: nem todo estágio ganha commit e os commits saem em rajada.
+- **O Verify acertou?** Problemas achados depois do Verify (CI vermelho, CHANGES_REQUESTED, escape), refutados sobre candidatos, itens de Atenção.
 - **A nota está bem formada?** As 5 categorias da Definição de pronto, Contrato válido (`C1`, ou fatia de épico que cita um `C<n>` ou a nota-mãe), Prova com dado real, Registro em formato válido, skips com motivo.
-
-O defeito escapado (task `fix` que cita task concluída há pouco) sai só no JSON e numa seção "Experimental": por ora tem ruído demais para comparar meses.
 
 A saída tem só IDs e números, nunca texto da nota. Com N < 10, não há percentual: só a contagem e os IDs.
 

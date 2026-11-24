@@ -45,12 +45,6 @@ REGRA_REVISAO_ANTIGA = (
 AVISO_INTERVALO = (
     "nao e tempo de trabalho: nem todo estagio ganha commit e os commits saem em rajada"
 )
-MOTIVO_EXPERIMENTAL = (
-    "nao confiavel: fixes citam tasks da mesma frente por contexto, nao por defeito; "
-    "a forma de torna-lo exato sera decidida pelo dono"
-)
-
-
 def rotulo_canonico(palavra):
     p = SINONIMOS_ROTULO.get(palavra.lower(), palavra.lower())
     return p if p in ROTULOS else None
@@ -591,18 +585,6 @@ def tempos_estagio(nota):
     return tempos
 
 
-def intervalo_registrado(nota):
-    """Horas do primeiro commit da task (com o ID) ao ultimo commit '<ID>: concluida'.
-
-    Nao e tempo de trabalho: nem todo estagio ganha commit e os commits saem em rajada.
-    """
-    conc = nota.rotulos("concluida")
-    if not conc or not nota.commits_id:
-        return None
-    d = horas(conc[-1][1] - nota.commits_id[0][1])
-    return d if d >= 0 else None
-
-
 def cobertura_commits(nota):
     """True se cada estagio do Registro tem commit '<ID>: <estagio>' (close -> concluida)."""
     if not nota.registro:
@@ -683,51 +665,6 @@ def autonoma(nota):
     return True
 
 
-def epico(id_task):
-    """'LIC-005-G' -> 'LIC-005'; 'DEB-011' -> 'DEB-011'."""
-    return "-".join(id_task.split("-")[:2])
-
-
-def defeitos_escapados(vault, mes, janela):
-    """Task tipo fix criada no mes que cita (link ou ID) task concluida ate <janela> dias antes."""
-    achados = []  # (fix_id, origem_id)
-    for n in vault.notas:
-        if n.tipo != "fix":
-            continue
-        criada = n.criada_em()
-        if not no_mes(criada, mes):
-            continue
-        corpo = n.texto.split("---", 2)[-1] if n.texto.startswith("---") else n.texto
-        alvos = set()
-        for link in LINK_RE.findall(corpo):
-            alvo = vault.por_stem.get(normalizar(link.strip()))
-            if alvo:
-                alvos.add(alvo)
-        for t in ID_RE.findall(corpo):
-            if t in vault.por_id:
-                alvos.add(vault.por_id[t])
-        # exclui o que e relacao de plano, nao defeito: pai, depende-de e tasks do mesmo epico
-        relacionadas = set()
-        for chave in ("pai", "depende-de"):
-            v = n.fm.get(chave)
-            for item in (v if isinstance(v, list) else [v] if isinstance(v, str) else []):
-                for link in LINK_RE.findall(item):
-                    alvo = vault.por_stem.get(normalizar(link.strip()))
-                    if alvo:
-                        relacionadas.add(alvo.id)
-        familia = epico(n.id)
-        for alvo in alvos:
-            if alvo is n or alvo.id in relacionadas or epico(alvo.id) == familia:
-                continue
-            conc = alvo.concluida_em()
-            if conc is None:
-                continue
-            dias = (criada.replace(tzinfo=None) - conc.replace(tzinfo=None)).total_seconds() / 86400.0
-            if 0 <= dias <= janela:
-                achados.append((n.id, alvo.id))
-    return achados
-
-
 # ---------------------------------------------------------------- PR via gh
 
 
@@ -770,15 +707,176 @@ def consultar_pr(url, repos):
     }
 
 
+# ---------------------------------------------------------------- mesmas definicoes do confianca.py
+#
+# Copia das regras do painel de confianca do vault (`.scripts/confianca.py`), para os dois darem o
+# mesmo numero no mesmo recorte. Nao mude aqui sem mudar la (e vice-versa).
+# Recorte: notas da pasta de concluidas, pela `concluida_em`; epico, mapa e decisao (formato novo) ficam fora.
+# Formato: nota com a chave `estagio` no frontmatter = novo; sem ela = antigo.
+
+CONF_ORIGEM_ID = r'^[A-Z]{3}-\d{3}(-[A-Z0-9]+)*$'
+CONF_ORIGEM_TEXTOS = ('anterior ao fluxo', 'externa')  # ORIGEM_TEXTOS do vault-check.py
+CONF_REVISAO_LINHA = r'^Resultado da revisao: corrigir agora (\d+) · opcionais \d+ · descartados \d+ · modo (unica|pipeline)$'
+CONF_EXEC_LINHA = r'^Resultado do exec: precisa de decisao (\d+) · so registro (\d+) · decisoes do coder (\d+)$'
+CONF_VERIFY_LINHA = (r'^- verify: concluido em \d{4}-\d{2}-\d{2} · modo (leve|completo) · rodadas \d+ · bloqueantes (\d+)'
+                     r' · atencao \d+ · refutados \d+ · skips: \S.*$')
+CONF_BUILD_LINHA = (r'^- build: concluido em \d{4}-\d{2}-\d{2} · modelo \S+ · rodadas \d+ · desvios (\d+)'
+                    r' · falhas esperadas \d+ · skips: \S.*$')
+CONF_COMMIT_ANTIGO = r'^(\S+): (nova task|PR aberto|publicada)\b'
+CONF_INICIO_ANTIGO = ('nova task',)
+CONF_COMMIT_NOVO = r'^(\S+): (plan|design|ship)$'
+CONF_INICIO_NOVO = ('plan', 'design')
+MARCA_CONFIANCA = "(mesma definicao do confianca.py)"
+
+
+def conf_commits(git, ramo):
+    """{'antigo': (inicio, fim), 'novo': (inicio, fim)}, cada um {id: data do primeiro commit} (data de autor)."""
+    saida = git.run("log", ramo, "--reverse", "--date=iso-strict", "--format=%ad%x09%s")
+    commits = {"antigo": ({}, {}), "novo": ({}, {})}
+    for linha in saida.splitlines():
+        data, _, assunto = linha.partition("\t")
+        for formato, regex, inicios in (("antigo", CONF_COMMIT_ANTIGO, CONF_INICIO_ANTIGO),
+                                        ("novo", CONF_COMMIT_NOVO, CONF_INICIO_NOVO)):
+            m = re.match(regex, assunto)
+            if m:
+                inicio, fim = commits[formato]
+                alvo = inicio if m.group(2) in inicios else fim
+                alvo.setdefault(m.group(1), datetime.fromisoformat(data))
+    return commits
+
+
+def conf_secao(texto, titulo):
+    m = re.search(r'^## %s[ \t]*$(.*?)(?=^## |\Z)' % titulo, texto, re.S | re.M)
+    return [l.strip() for l in m.group(1).split('\n')] if m else []
+
+
+def conf_primeira(linhas, regex):
+    for l in linhas:
+        m = re.match(regex, l)
+        if m:
+            return m
+    return None
+
+
+def conf_valor(fm, chave):
+    """str(fm.get(chave) or '') do confianca.py; chave vazia no parser minimo vira [] e conta como vazia."""
+    v = fm.get(chave)
+    if v in (None, [], ""):
+        return ""
+    return str(v)
+
+
+def conf_ler_tarefas(pasta_concluidas, commits):
+    """Tasks concluidas no formato do confianca.py (lista de dicts), ignoradas e fora da conta."""
+    tarefas, ignoradas, fora = [], 0, 0
+    if not os.path.isdir(pasta_concluidas):
+        return tarefas, ignoradas, fora
+    for nome in sorted(os.listdir(pasta_concluidas)):
+        if not nome.endswith(".md"):
+            continue
+        with open(os.path.join(pasta_concluidas, nome), encoding="utf-8-sig") as f:
+            texto = f.read().replace("\r\n", "\n")
+        fm = parse_frontmatter(texto)
+        valor = conf_valor(fm, "concluida_em")
+        if not re.match(r'^\d{4}-\d{2}-\d{2}$', valor):
+            ignoradas += 1
+            continue
+        try:
+            concluida = date.fromisoformat(valor)
+        except ValueError:
+            ignoradas += 1
+            continue
+        tid = conf_valor(fm, "id")
+        novo = "estagio" in fm
+        if novo:
+            if conf_valor(fm, "tamanho") in ("epico", "mapa") or conf_valor(fm, "tipo") == "decisao":
+                fora += 1
+                continue
+            registro = conf_secao(texto, "Registro de etapas")
+            ver = conf_primeira(registro, CONF_VERIFY_LINHA)
+            bld = conf_primeira(registro, CONF_BUILD_LINHA)
+            corrigir_agora = int(ver.group(2)) if ver else None
+            divergencias = int(bld.group(1)) if bld else None
+        else:
+            rev = conf_primeira(conf_secao(texto, "Revisao"), CONF_REVISAO_LINHA)
+            exe = conf_primeira(conf_secao(texto, "Decisoes tomadas"), CONF_EXEC_LINHA)
+            corrigir_agora = int(rev.group(1)) if rev else None
+            divergencias = int(exe.group(1)) + int(exe.group(2)) if exe else None
+        inicio, fim = commits["novo" if novo else "antigo"]
+        h = None
+        if tid in inicio and tid in fim and fim[tid] >= inicio[tid]:
+            h = (fim[tid] - inicio[tid]).total_seconds() / 3600
+        tarefas.append({
+            "id": tid, "concluida": concluida, "formato": "novo" if novo else "antigo",
+            "fix": conf_valor(fm, "tipo") == "fix", "origem": conf_valor(fm, "origem"),
+            "corrigir_agora": corrigir_agora, "divergencias": divergencias, "horas": h,
+        })
+    return tarefas, ignoradas, fora
+
+
+def conf_metricas(tarefas):
+    """Os quatro indicadores do painel de confianca para um grupo de tasks."""
+    rev = {t["id"]: t["corrigir_agora"] for t in tarefas if t["corrigir_agora"] is not None}
+    div = {t["id"]: t["divergencias"] for t in tarefas if t["divergencias"] is not None}
+    hrs = {t["id"]: round(t["horas"], 1) for t in tarefas if t["horas"] is not None}
+    hrs_brutas = [t["horas"] for t in tarefas if t["horas"] is not None]
+    fixes = [t for t in tarefas if t["fix"]]
+    com_origem = [t for t in fixes if t["origem"]]
+    escapes = [(t["id"], t["origem"]) for t in com_origem if re.match(CONF_ORIGEM_ID, t["origem"])]
+    sem_dado_escapes = {
+        "sem_origem": sorted(t["id"] for t in fixes if not t["origem"]),
+        "anterior_ao_fluxo": sorted(t["id"] for t in com_origem if t["origem"] == "anterior ao fluxo"),
+        "externa": sorted(t["id"] for t in com_origem if t["origem"] == "externa"),
+        "origem_invalida": sorted(t["id"] for t in com_origem
+                                  if t["origem"] not in CONF_ORIGEM_TEXTOS and not re.match(CONF_ORIGEM_ID, t["origem"])),
+    }
+    ids = [t["id"] for t in tarefas]
+    return {
+        "concluidas": indicador(len(tarefas), ids, "tasks"),
+        "revisao_sem_bloqueante": percentual(
+            [i for i, v in rev.items() if v == 0], list(rev), definicao=MARCA_CONFIANCA,
+            nota="Y = concluidas com o dado da revisao (bloqueantes da linha verify ou corrigir agora)"),
+        "divergencias_por_task": indicador(
+            round(statistics.mean(div.values()), 1) if div else None, list(div), "media", detalhe=div,
+            definicao=MARCA_CONFIANCA,
+            nota="desvios da linha build (novo) ou precisa de decisao + so registro (antigo)"),
+        "horas_do_inicio_ao_pr": indicador(
+            {"mediana": round(statistics.median(hrs_brutas), 1), "minimo": round(min(hrs_brutas), 1),
+             "maximo": round(max(hrs_brutas), 1)} if hrs_brutas else None, list(hrs), "h", detalhe=hrs,
+            definicao=MARCA_CONFIANCA,
+            nota="1o commit '<ID>: plan|design' ate o 1o '<ID>: ship' (novo); 1o 'nova task' ate o 1o "
+                 "'PR aberto|publicada' (antigo); mensagem exata, data de autor, ramo do config"),
+        "escapes": indicador(
+            len(escapes), sorted({f for f, _o in escapes}), "fixes",
+            pares=[[f, o] for f, o in sorted(escapes)], origens=sorted({o for _f, o in escapes}),
+            fixes_no_recorte=len(fixes), sem_dado=sem_dado_escapes, definicao=MARCA_CONFIANCA,
+            nota="fix concluido no recorte com `origem` = ID de task conta como escape daquela task; "
+                 "sem origem, `anterior ao fluxo` e `externa` ficam fora da conta"),
+        "sem_dado": {
+            "revisao": len(tarefas) - len(rev), "exec": len(tarefas) - len(div),
+            "horas_ate_o_pr": len(tarefas) - len(hrs), "escapes": len(fixes) - len(com_origem),
+        },
+    }
+
+
 # ---------------------------------------------------------------- calculo por mes
 
 
-def calcular_mes(vault, mes, config, usar_gh, cache_pr):
-    janela = int(config.get("janela_defeito_dias", 30))
+def calcular_mes(vault, mes, config, usar_gh, cache_pr, conf_tarefas):
     ativas = tarefas_do_mes(vault, mes)
     vault.carregar_historicos(ativas)
-    escapados = defeitos_escapados(vault, mes, janela)
-    resultado = {"mes": mes, "fluxo_novo": {}, "fluxo_antigo": {}}
+    resultado = {"mes": mes, "confianca": {}, "fluxo_novo": {}, "fluxo_antigo": {}}
+
+    # --- mesmas definicoes do confianca.py: tasks concluidas no mes (novo + antigo somados)
+    do_mes = [t for t in conf_tarefas if t["concluida"].strftime("%Y-%m") == mes]
+    conf = conf_metricas(do_mes)
+    conf["por_formato"] = {
+        f: {k: v for k, v in conf_metricas([t for t in do_mes if t["formato"] == f]).items()
+            if k in ("concluidas", "horas_do_inicio_ao_pr", "divergencias_por_task")}
+        for f in ("novo", "antigo")
+    }
+    resultado["confianca"] = conf
+    origens_escape = set(conf["escapes"]["origens"])
 
     novas = [n for n in ativas if n.fluxo == "novo"]
     antigas = [n for n in ativas if n.fluxo == "antigo"]
@@ -800,11 +898,6 @@ def calcular_mes(vault, mes, config, usar_gh, cache_pr):
     g["A"]["contrato_ou_dod_alterado_apos_design"] = percentual(
         list(alt), base_alt, estagio_da_alteracao=alt
     )
-    desv = {n.id: n.registro["build"]["campos"]["desvios"] for n in novas
-            if "build" in n.registro and isinstance(n.registro["build"]["campos"].get("desvios"), int)}
-    g["A"]["desvios_por_task"] = indicador(
-        resumo_numerico(list(desv.values())), list(desv), "desvios", detalhe=desv
-    )
     par_por_motivo, par_ids = {}, {}
     for n in novas:
         ps = paradas(n)
@@ -817,26 +910,8 @@ def calcular_mes(vault, mes, config, usar_gh, cache_pr):
         por_estagio=par_por_motivo,
         nota="motivo = estagio no momento da parada; o texto do motivo nao sai (LGPD)",
     )
-    # Experimental: fora do resumo, da tabela e do criterio das 3 tasks fora do padrao.
-    fixes = sorted({f for f, _o in escapados})
-    resultado["fluxo_novo"]["experimental"] = {
-        "defeito_escapado": indicador(
-            len(fixes), fixes, "fixes",
-            origens=sorted({o for _f, o in escapados}),
-            pares=[[f, o] for f, o in sorted(escapados)],
-            aproximado=True, janela_dias=janela,
-            nota=MOTIVO_EXPERIMENTAL,
-        )
-    }
 
     # B. O fluxo andou bem?
-    concl = [n for n in novas if no_mes(n.concluida_em(), mes) and n.rotulos("concluida")]
-    tt = {n.id: intervalo_registrado(n) for n in concl}
-    tt = {k: v for k, v in tt.items() if v is not None}
-    g["B"]["intervalo_registrado_horas"] = indicador(
-        resumo_numerico(list(tt.values())), list(tt), "h", detalhe=tt,
-        nota="do primeiro commit da task ao concluida; tasks concluidas no mes; " + AVISO_INTERVALO,
-    )
     cob_base = [n for n in novas if n.registro]
     g["B"]["cobertura_commits_estagio"] = percentual(
         [n.id for n in cob_base if cobertura_commits(n)], [n.id for n in cob_base],
@@ -855,7 +930,7 @@ def calcular_mes(vault, mes, config, usar_gh, cache_pr):
                 vals[n.id] = t[e]
         por_estagio[e] = indicador(
             resumo_numerico(list(vals.values())), list(vals), "h", detalhe=vals,
-            nota="so entre o commit do estagio anterior e o deste, quando os dois existem",
+            nota="so entre o commit do estagio anterior e o deste, quando os dois existem; " + AVISO_INTERVALO,
         )
     g["B"]["tempo_por_estagio_horas"] = por_estagio
     rep = {n.id: estagios_repetidos(n) for n in novas}
@@ -909,13 +984,14 @@ def calcular_mes(vault, mes, config, usar_gh, cache_pr):
             motivos.append("ci_vermelho")
         if g["B"]["pr"]["changes_requested"].get(i):
             motivos.append("changes_requested")
+        if i in origens_escape:
+            motivos.append("escape")
         if motivos:
             depois[i] = motivos
-    g["C"]["bloqueantes_no_verify"] = indicador(sum(bloq.values()), list(bloq), "bloqueantes", detalhe=bloq)
     g["C"]["problemas_depois_do_verify"] = indicador(
         len(depois), list(depois), "tasks", detalhe=depois,
         verify_sem_bloqueante=sorted(i for i in depois if bloq.get(i) == 0),
-        nota="CI vermelho e CHANGES_REQUESTED, pelo gh; defeito escapado fica de fora (experimental)",
+        nota="CI vermelho e CHANGES_REQUESTED (gh) e escape pelo campo origem de fix concluido no mes",
     )
     ref = {n.id: (n.registro["verify"]["campos"].get("refutados"), n.registro["verify"]["campos"].get("candidatos"))
            for n in novas if "verify" in n.registro}
@@ -962,18 +1038,11 @@ def calcular_mes(vault, mes, config, usar_gh, cache_pr):
     )
     resultado["fluxo_novo"]["grupos"] = g
 
-    # --- fluxo antigo: so o que da
-    concl_a = [n for n in antigas if no_mes(n.concluida_em(), mes) and n.rotulos("concluida")]
-    tta = {n.id: intervalo_registrado(n) for n in concl_a}
-    tta = {k: v for k, v in tta.items() if v is not None}
+    # --- fluxo antigo: so o que o confianca.py nao mede
     repa = {n.id: estagios_repetidos(n) for n in antigas}
     repa = {k: v for k, v in repa.items() if v > 0}
     resultado["fluxo_antigo"]["grupos"] = {
         "B": {
-            "intervalo_registrado_horas": indicador(
-                resumo_numerico(list(tta.values())), list(tta), "h", detalhe=tta,
-                nota="do primeiro commit da task ao concluida; tasks concluidas no mes; " + AVISO_INTERVALO,
-            ),
             "retrabalho_revisao_repetida": indicador(
                 sum(repa.values()), list(repa), "commits a mais", detalhe=repa,
                 tasks_com_revisao=len([n for n in antigas if n.rotulos("revisada")]),
@@ -994,7 +1063,7 @@ def fmt(ind):
     if ind.get("unidade") == "%":
         if ind.get("valor") is None:
             return "%d de %d" % (ind["contagem"], ind["n"])
-        return "%.1f%% (N=%d)" % (ind["valor"], ind["n"])
+        return "%.1f%% (%d de %d)" % (ind["valor"], ind["contagem"], ind["n"])
     v = ind.get("valor")
     if v is None:
         return "- (N=%d)" % ind["n"]
@@ -1005,13 +1074,30 @@ def fmt(ind):
     return "%s (N=%d)" % (v, ind["n"])
 
 
+def fmt_escapes(ind):
+    """Como o confianca.py: "-" quando ha fix e nenhum tem `origem` (sem dado, nao zero escape)."""
+    if ind["fixes_no_recorte"] and len(ind["sem_dado"]["sem_origem"]) == ind["fixes_no_recorte"]:
+        return "- (sem dado: %d fixes sem origem)" % ind["fixes_no_recorte"]
+    pares = ", ".join("%s <- %s" % (f, o) for f, o in ind["pares"])
+    return "%d%s (fixes no recorte: %d)" % (ind["valor"], " (%s)" % pares if pares else "", ind["fixes_no_recorte"])
+
+
+LINHAS_TABELA_CONFIANCA = [
+    ("Concluidas no mes", lambda r: fmt(r["confianca"]["concluidas"])),
+    ("C. Revisao sem bloqueante", lambda r: fmt(r["confianca"]["revisao_sem_bloqueante"])),
+    ("C. Escapes", lambda r: fmt_escapes(r["confianca"]["escapes"])),
+    ("A. Divergencias por task (media)", lambda r: fmt(r["confianca"]["divergencias_por_task"])),
+    ("B. Horas do inicio ao PR", lambda r: fmt(r["confianca"]["horas_do_inicio_ao_pr"])),
+    ("B. Horas do inicio ao PR - so fluxo novo",
+     lambda r: fmt(r["confianca"]["por_formato"]["novo"]["horas_do_inicio_ao_pr"])),
+    ("B. Horas do inicio ao PR - so fluxo antigo",
+     lambda r: fmt(r["confianca"]["por_formato"]["antigo"]["horas_do_inicio_ao_pr"])),
+]
+
 LINHAS_TABELA_NOVO = [
     ("Tasks ativas", lambda r: r["fluxo_novo"]["tasks"]),
     ("A. Contrato/DoD alterado apos Design", lambda r: r["fluxo_novo"]["grupos"]["A"]["contrato_ou_dod_alterado_apos_design"]),
-    ("A. Desvios por task (build)", lambda r: r["fluxo_novo"]["grupos"]["A"]["desvios_por_task"]),
     ("A. Paradas (bloqueada)", lambda r: r["fluxo_novo"]["grupos"]["A"]["paradas_bloqueada"]),
-    ("B. Intervalo registrado no vault (h), do primeiro commit da task ao concluida",
-     lambda r: r["fluxo_novo"]["grupos"]["B"]["intervalo_registrado_horas"]),
     ("B. Cobertura dos commits de estagio", lambda r: r["fluxo_novo"]["grupos"]["B"]["cobertura_commits_estagio"]),
 ] + [
     ("B. Intervalo entre commits: %s (h)" % e,
@@ -1022,7 +1108,6 @@ LINHAS_TABELA_NOVO = [
     ("B. Rodadas build", lambda r: r["fluxo_novo"]["grupos"]["B"]["rodadas_build"]),
     ("B. Rodadas verify", lambda r: r["fluxo_novo"]["grupos"]["B"]["rodadas_verify"]),
     ("B. Autonomia Build -> Ship", lambda r: r["fluxo_novo"]["grupos"]["B"]["autonomia_build_ship"]),
-    ("C. Bloqueantes no Verify", lambda r: r["fluxo_novo"]["grupos"]["C"]["bloqueantes_no_verify"]),
     ("C. Problemas depois do Verify", lambda r: r["fluxo_novo"]["grupos"]["C"]["problemas_depois_do_verify"]),
     ("C. Refutados / candidatos", lambda r: r["fluxo_novo"]["grupos"]["C"]["refutados_sobre_candidatos"]),
     ("C. Atencao por task", lambda r: r["fluxo_novo"]["grupos"]["C"]["atencao_por_task"]),
@@ -1034,31 +1119,29 @@ LINHAS_TABELA_NOVO = [
 ]
 LINHAS_TABELA_ANTIGO = [
     ("Tasks ativas", lambda r: r["fluxo_antigo"]["tasks"]),
-    ("B. Intervalo registrado no vault (h), do primeiro commit da task ao concluida",
-     lambda r: r["fluxo_antigo"]["grupos"]["B"]["intervalo_registrado_horas"]),
     ("B. Retrabalho (revisao repetida)", lambda r: r["fluxo_antigo"]["grupos"]["B"]["retrabalho_revisao_repetida"]),
 ]
 
 
 def fora_do_padrao(res):
-    """Top 3 do mes: pontos = retrabalho + desvios + paradas; desempate pelo maior intervalo registrado.
+    """Top 3 do mes: pontos = retrabalho + divergencias + paradas; desempate pelas horas do inicio ao PR.
 
-    O defeito escapado (experimental) nao entra no criterio."""
+    Divergencias e horas com a definicao do confianca.py (so tasks concluidas no mes tem esses dados)."""
     g = res["fluxo_novo"]["grupos"]
     ids = set(res["fluxo_novo"]["tasks"]["ids"])
     rep = g["B"]["retrabalho_estagio_repetido"].get("detalhe", {})
-    desv = g["A"]["desvios_por_task"].get("detalhe", {})
+    desv = res["confianca"]["divergencias_por_task"].get("detalhe", {})
     par = g["A"]["paradas_bloqueada"].get("detalhe", {})
-    tt = g["B"]["intervalo_registrado_horas"].get("detalhe", {})
+    hrs = res["confianca"]["horas_do_inicio_ao_pr"].get("detalhe", {})
     linhas = []
     for i in ids:
         pts = rep.get(i, 0) + desv.get(i, 0) + par.get(i, 0)
-        linhas.append((pts, tt.get(i, 0) or 0, i))
+        linhas.append((pts, hrs.get(i, 0) or 0, i))
     linhas.sort(key=lambda x: (-x[0], -x[1], x[2]))
     return [
-        {"id": i, "pontos": p, "retrabalho": rep.get(i, 0), "desvios": desv.get(i, 0),
-         "paradas": par.get(i, 0), "intervalo_registrado_h": tt.get(i)}
-        for p, _t, i in linhas[:3] if p > 0 or tt.get(i)
+        {"id": i, "pontos": p, "retrabalho": rep.get(i, 0), "divergencias": desv.get(i),
+         "paradas": par.get(i, 0), "horas_do_inicio_ao_pr": hrs.get(i)}
+        for p, _t, i in linhas[:3] if p > 0 or hrs.get(i)
     ]
 
 
@@ -1066,6 +1149,7 @@ def gerar_markdown(dados):
     atual = dados["periodos"][0]
     meses = [p["mes"] for p in dados["periodos"]]
     g = atual["fluxo_novo"]["grupos"]
+    conf = atual["confianca"]
     out = []
     out.append("# Metricas das notas de task - %s" % atual["mes"])
     out.append("")
@@ -1074,29 +1158,49 @@ def gerar_markdown(dados):
     out.append("")
     out.append("## Resumo")
     out.append("")
-    tt = g["B"]["intervalo_registrado_horas"]["valor"]
-    alt = g["A"]["contrato_ou_dod_alterado_apos_design"]
+    hrs = conf["horas_do_inicio_ao_pr"]
+    esc = conf["escapes"]
     resumo = [
-        "- Tasks com atividade: %d no fluxo novo, %d no fluxo antigo." % (
-            atual["fluxo_novo"]["tasks"]["n"], atual["fluxo_antigo"]["tasks"]["n"]),
-        "- Intervalo registrado no vault (fluxo novo, concluidas no mes): %s; nao e tempo de trabalho "
-        "(cobertura dos commits de estagio: %s)." % (
-            "mediana %s h, N=%d" % (tt["mediana"], g["B"]["intervalo_registrado_horas"]["n"]) if tt else "sem dado",
-            fmt(g["B"]["cobertura_commits_estagio"])),
+        "- Concluidas no mes: %d; tasks com atividade: %d no fluxo novo, %d no fluxo antigo." % (
+            conf["concluidas"]["n"], atual["fluxo_novo"]["tasks"]["n"], atual["fluxo_antigo"]["tasks"]["n"]),
+        "- Horas do inicio ao PR %s: %s." % (
+            MARCA_CONFIANCA,
+            "mediana %s h, N=%d" % (hrs["valor"]["mediana"], hrs["n"]) if hrs["valor"] else "sem dado"),
+        "- Revisao sem bloqueante %s: %s; divergencias por task: %s." % (
+            MARCA_CONFIANCA, fmt(conf["revisao_sem_bloqueante"]),
+            "-" if conf["divergencias_por_task"]["valor"] is None else conf["divergencias_por_task"]["valor"]),
+        "- Escapes %s: %d (sem dado: %d fix sem origem, %d anterior ao fluxo, %d externa)." % (
+            MARCA_CONFIANCA, esc["valor"], len(esc["sem_dado"]["sem_origem"]),
+            len(esc["sem_dado"]["anterior_ao_fluxo"]), len(esc["sem_dado"]["externa"])),
         "- Retrabalho: %d tasks com estagio repetido; Contrato/DoD alterado apos Design: %s." % (
-            g["B"]["retrabalho_estagio_repetido"]["n"], fmt(alt)),
-        "- Bloqueantes no Verify: %d; problemas depois do Verify (CI vermelho, CHANGES_REQUESTED): %d tasks." % (
-            g["C"]["bloqueantes_no_verify"]["valor"], g["C"]["problemas_depois_do_verify"]["n"]),
-        "- Registro em formato valido: %s; skips com motivo: %s." % (
-            fmt(g["D"]["registro_formato_valido"]), fmt(g["D"]["skips_com_motivo"])),
+            g["B"]["retrabalho_estagio_repetido"]["n"], fmt(g["A"]["contrato_ou_dod_alterado_apos_design"])),
     ]
     out.extend(resumo[:5])
     out.append("")
+    out.append("## Indicadores %s" % MARCA_CONFIANCA)
+    out.append("")
+    out.append("Mesmo recorte do painel de confianca: notas em Concluidas pela `concluida_em` no mes, fluxo novo e "
+               "antigo somados; epico, mapa e decisao ficam fora. Cada indicador desta tabela usa a mesma "
+               "definicao do `confianca.py`.")
+    out.append("")
+    out.append("| Indicador | " + " | ".join(meses) + " |")
+    out.append("| --- | " + " | ".join("---" for _ in meses) + " |")
+    for nome, f in LINHAS_TABELA_CONFIANCA:
+        out.append("| %s | " % nome + " | ".join(f(p) for p in dados["periodos"]) + " |")
+    out.append("")
+    sd = conf["sem_dado"]
+    out.append("Sem dado (%s): revisao %d · exec %d · horas ate o PR %d · escapes %d. Escapes fora da conta: "
+               "sem origem %s; anterior ao fluxo %s; externa %s." % (
+                   atual["mes"], sd["revisao"], sd["exec"], sd["horas_ate_o_pr"], sd["escapes"],
+                   ", ".join(esc["sem_dado"]["sem_origem"]) or "-",
+                   ", ".join(esc["sem_dado"]["anterior_ao_fluxo"]) or "-",
+                   ", ".join(esc["sem_dado"]["externa"]) or "-"))
+    out.append("")
     for titulo, linhas, nota in (
-        ("Fluxo novo: mes x meses anteriores", LINHAS_TABELA_NOVO, None),
+        ("Fluxo novo: mes x meses anteriores", LINHAS_TABELA_NOVO,
+         "Tasks com atividade no mes (commit do vault com o ID ou `concluida_em` no mes)."),
         ("Fluxo antigo (linha de base): mes x meses anteriores", LINHAS_TABELA_ANTIGO,
-         "Sem Registro: so o intervalo registrado no vault e o retrabalho (revisao repetida). "
-         "O aviso tambem vale aqui: " + AVISO_INTERVALO + ". "
+         "Sem Registro: so o retrabalho (revisao repetida); horas e divergencias estao na tabela do confianca.py. "
          "Retrabalho: " + REGRA_REVISAO_ANTIGA + "."),
     ):
         out.append("## %s" % titulo)
@@ -1111,26 +1215,33 @@ def gerar_markdown(dados):
         out.append("")
     out.append("Formato: `med X (min-max; N)` para tempos e contagens; `k de N` quando N < %d (sem percentual)." % N_MINIMO_PERCENTUAL)
     out.append("")
-    out.append("Intervalos em horas vem dos commits do vault e " + AVISO_INTERVALO + ". "
-               "O intervalo de um estagio so e calculado entre o commit do estagio anterior e o dele, quando os dois existem.")
+    out.append("Intervalo entre commits: so entre o commit do estagio anterior e o dele, quando os dois existem; "
+               + AVISO_INTERVALO + ".")
     out.append("")
     out.append("## 3 tasks mais fora do padrao (%s)" % atual["mes"])
     out.append("")
-    out.append("Criterio: pontos = retrabalho (commits a mais do mesmo estagio) + desvios (linha build) + paradas (bloqueada). Empate: maior intervalo registrado.")
+    out.append("Criterio: pontos = retrabalho (commits a mais do mesmo estagio) + divergencias + paradas (bloqueada). "
+               "Empate: mais horas do inicio ao PR. Divergencias e horas %s: so existem para task concluida no mes."
+               % MARCA_CONFIANCA)
     out.append("")
     top = dados["fora_do_padrao"]
     if top:
-        out.append("| ID | Pontos | Retrabalho | Desvios | Paradas | Intervalo registrado (h) |")
+        out.append("| ID | Pontos | Retrabalho | Divergencias | Paradas | Horas do inicio ao PR |")
         out.append("| --- | --- | --- | --- | --- | --- |")
         for t in top:
-            out.append("| %s | %d | %d | %d | %d | %s |" % (
-                t["id"], t["pontos"], t["retrabalho"], t["desvios"], t["paradas"],
-                "-" if t["intervalo_registrado_h"] is None else t["intervalo_registrado_h"]))
+            out.append("| %s | %d | %d | %s | %d | %s |" % (
+                t["id"], t["pontos"], t["retrabalho"], "-" if t["divergencias"] is None else t["divergencias"],
+                t["paradas"], "-" if t["horas_do_inicio_ao_pr"] is None else t["horas_do_inicio_ao_pr"]))
     else:
         out.append("Nenhuma task com pontos no mes.")
     out.append("")
-    out.append("## IDs por indicador (%s, fluxo novo)" % atual["mes"])
+    out.append("## IDs por indicador (%s)" % atual["mes"])
     out.append("")
+    for chave in ("revisao_sem_bloqueante", "divergencias_por_task", "horas_do_inicio_ao_pr", "escapes"):
+        ind = conf[chave]
+        ids = ind.get("ids_sim", ind["ids"]) if ind.get("unidade") == "%" else ind["ids"]
+        extra = " (de %d: %s)" % (ind["n"], ", ".join(ind["ids"]) or "-") if ind.get("unidade") == "%" else ""
+        out.append("- %s %s: %s%s" % (chave, MARCA_CONFIANCA, ", ".join(ids) or "-", extra))
     for nome, f in LINHAS_TABELA_NOVO:
         ind = f(atual)
         ids = ind.get("ids_sim", ind.get("ids", [])) if ind.get("unidade") == "%" else ind.get("ids", [])
@@ -1145,17 +1256,6 @@ def gerar_markdown(dados):
         ", ".join(pr["ci_vermelho"]) or "-"))
     out.append("")
     out.append("Detalhe completo (valores por ID): `metricas-%s.json`." % atual["mes"])
-    out.append("")
-    out.append("## Experimental")
-    out.append("")
-    out.append("Fora do resumo, da tabela e do criterio das 3 tasks fora do padrao. So para acompanhar.")
-    out.append("")
-    for p in dados["periodos"]:
-        esc = p["fluxo_novo"]["experimental"]["defeito_escapado"]
-        out.append("- Defeito escapado (aproximado), %s: %d fixes (%s)" % (
-            p["mes"], esc["valor"], ", ".join(esc["ids"]) or "-"))
-    out.append("")
-    out.append("Por que: " + MOTIVO_EXPERIMENTAL + ".")
     out.append("")
     out.append("Gerado por script elaborado com suporte de IA - Revisado por [Nome do Responsavel]")
     out.append("")
@@ -1180,8 +1280,17 @@ def main(argv=None):
         config = json.load(f)
     vault = Vault(config["vault"], config.get("pasta_tasks", "."))
     cache_pr = {}
+    pasta_concl = os.path.join(config["vault"], config.get(
+        "pasta_concluidas", os.path.join(config.get("pasta_tasks", "."), "Concluidas")))
+    try:
+        commits_conf = conf_commits(vault.git, config.get("ramo", "main"))
+    except RuntimeError:
+        # sem o git, as horas sairiam "sem dado" em tudo, como se faltasse dado nas notas
+        print("ERRO: nao consegui ler o git do vault (ramo %r); relatorio nao gerado." % config.get("ramo", "main"))
+        return 1
+    conf_tarefas, conf_ignoradas, conf_fora = conf_ler_tarefas(pasta_concl, commits_conf)
     periodos = [
-        calcular_mes(vault, m, config, not args.sem_gh, cache_pr)
+        calcular_mes(vault, m, config, not args.sem_gh, cache_pr, conf_tarefas)
         for m in meses_analisados(args.mes, args.meses_anteriores)
     ]
     dados = {
@@ -1195,7 +1304,11 @@ def main(argv=None):
             "n_minimo_percentual": N_MINIMO_PERCENTUAL,
             "notas_do_mes": "commit do vault com o ID no mes ou concluida_em no mes",
             "lgpd": "so IDs e numeros; nenhum texto de nota",
+            "confianca": "indicadores marcados usam as definicoes do .scripts/confianca.py do vault; "
+                         "recorte = concluidas pela concluida_em no mes",
         },
+        "confianca_ignoradas_sem_concluida_em": conf_ignoradas,
+        "confianca_fora_da_conta_epico_mapa_decisao": conf_fora,
         "periodos": periodos,
     }
     dados["fora_do_padrao"] = fora_do_padrao(periodos[0])
