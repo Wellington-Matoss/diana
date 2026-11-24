@@ -20,7 +20,7 @@ Memoria do agente e `CLAUDE.md`: onde ficam as notas de arquitetura, as decisoes
 ## 0. Escolher as tasks
 
 - Com argumento: so aquela nota. Ela precisa estar `em-revisao` (ou vir do Ship de um repositorio sem PR). Senao, caso 0.
-- Sem argumento: todas as notas com `status: em-revisao`.
+- Sem argumento: todas as notas com `status: em-revisao`. Nenhuma ou varias e o normal, nao e parada (ver o paragrafo do Close em `../task-comum/regras.md`).
 - Task de repositorio sem PR (chamada pelo orquestrador logo apos o Ship publicar): pule o passo 1 e feche direto; no Resultado, "publicada no commit <hash>" no lugar do PR.
 - Sincronize o vault.
 
@@ -61,7 +61,13 @@ Para cada task, consulte cada PR da nota (`gh pr view <url> --json state,mergedA
 
 ## 6. Conferir e sincronizar
 
-- Rode a verificacao automatica do vault do projeto, se houver. Erro numa nota que este fechamento tocou: caso 8 para essa task, sem sincronizar a nota com erro. Erro em nota alheia: so relate.
+- Rode a verificacao automatica do vault do projeto, se houver. Erro em nota alheia: so relate.
+- Erro numa nota que este fechamento tocou e escrita do proprio Close: corrija e rode a verificacao de novo. Cada correcao e uma tentativa de correcao (limite na tabela de `../task-comum/regras.md`).
+- Persistiu depois do limite: caso 8 para essa task.
+  1. Desfaca as alteracoes deste fechamento nas notas da task (o vault e versionado): frontmatter, linha `close`, `## Resultado`, documentacao, decisoes e debitos.
+  2. Devolva a nota a pasta de antes e ao estado de antes (`em-revisao`, `estagio: ship`).
+  3. Marque `status: bloqueada` e registre a linha `Parada` na secao `## Resultado`.
+  4. Nao sincronize essas notas.
 - Sincronize o vault (commit `<ID>: concluida`).
 
 ## Relatorio

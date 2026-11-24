@@ -23,7 +23,7 @@ Nesses estagios, o agente nao pergunta: decide, registra o motivo e segue. Ele p
 | 5    | segredo          | Ship         | o diff contem segredo ou dado pessoal                                                                          |
 | 6    | conflito na base | Ship         | integrar a base gera conflito na logica da task (conflito mecanico nao conta)                                 |
 | 7    | autenticacao     | Ship e Close | a autenticacao para push, PR, consulta do PR ou publicacao nao esta disponivel, ou a ferramenta de publicacao recusa |
-| 8    | vault com erro   | Close        | a verificacao automatica do vault acusa erro numa nota que o Close tocou                                       |
+| 8    | vault com erro   | Close        | a verificacao automatica do vault continua com erro numa nota que o Close tocou, depois do limite de tentativas |
 
 **Permissao negada pelo ambiente.** Sem humano na sessao, ninguem aprova uma permissao. Comando, pasta ou rede negados pelo ambiente param na hora, no caso 3, com o comando negado no motivo. Nao conta como tentativa de correcao e nao se tenta de novo.
 
@@ -31,7 +31,7 @@ Todo o resto: escolha a opcao mais conservadora, registre o motivo e siga. O que
 
 ## Limites de tentativas
 
-A unidade e a **tentativa de correcao**: uma correcao completa, conferida (ver "Correcao por subagente"; no Build, o passo 4). Cada linha conta separado. Passou do limite em qualquer linha e o problema continua: caso 4.
+A unidade e a **tentativa de correcao**: uma correcao completa, conferida (ver "Correcao por subagente"; no Build, o passo 4; no Close, o passo 6). Cada linha conta separado. Passou do limite e o problema continua: caso 4, exceto na linha do Close, que leva ao caso 8.
 
 | Estagio | Tentativa de correcao                                                 | Limite |
 | ------- | --------------------------------------------------------------------- | ------ |
@@ -40,6 +40,7 @@ A unidade e a **tentativa de correcao**: uma correcao completa, conferida (ver "
 | Verify  | correcao por subagente dos bloqueantes                                | 2      |
 | Ship    | correcao por subagente depois de integrar a base                      | 1      |
 | Ship    | correcao por subagente de CI vermelho causado pelo diff               | 3      |
+| Close   | correcao das proprias edicoes depois de erro da verificacao do vault numa nota que o Close tocou | 2 |
 
 **Modelo:** a segunda tentativa de correcao usa o modelo forte da tabela de modelo do Build (passo 2).
 
@@ -65,11 +66,17 @@ RESULTADO: <build|verify|ship|close> bloqueada - caso <n> (<nome>): <motivo em u
 
 Caso 0 por estagio anterior nao concluido: nao altere a nota. Ela pode estar no meio de outro estagio.
 
-Sem nota escolhida (passo 0 sem argumento, nenhuma candidata ou mais de uma): nao altere nenhuma nota. Liste as candidatas no motivo, ou diga que nao ha nenhuma: `RESULTADO: build bloqueada - caso 0 (entrada): nota ambigua: <nota 1>, <nota 2>`.
+Build, Verify e Ship sem nota escolhida (passo 0 sem argumento, nenhuma candidata ou mais de uma): nao altere nenhuma nota. Liste as candidatas no motivo, ou diga que nao ha nenhuma: `RESULTADO: build bloqueada - caso 0 (entrada): nota ambigua: <nota 1>, <nota 2>`.
 
 O estagio que conclui encerra com `RESULTADO: <estagio> concluido - <resumo>`, no formato do passo final da skill.
 
-**Close:** uma parada vale so para a task em que ocorreu; o Close segue com as outras tasks da varredura. PR ainda aberto nao e parada: a task fica "ainda em revisao". A linha final e `RESULTADO: close concluido - fechadas <N>, em revisao <N>, pausadas <N>`, ou `RESULTADO: close bloqueada - caso <n> (<nome>): <IDs e motivo>` se alguma task parou.
+**Close:** sem argumento, ele varre todas as notas `em-revisao` e fecha as que estiverem prontas. Zero ou varias notas e o normal: nao e caso 0. Uma parada vale so para a task em que ocorreu; o Close segue com as outras. PR ainda aberto nao e parada: a task fica "ainda em revisao". A linha final e uma destas:
+
+```text
+RESULTADO: close concluido - nenhuma task em revisao
+RESULTADO: close concluido - fechadas <N>, em revisao <N>, pausadas <N>
+RESULTADO: close bloqueada - fechadas <N>, em revisao <N>, pausadas <N>, paradas <N>: <ID> caso <n> (<nome>); <ID> caso <n> (<nome>)
+```
 
 ## Reentrada depois de `bloqueada`
 
@@ -79,7 +86,8 @@ O estagio que conclui encerra com `RESULTADO: <estagio> concluido - <resumo>`, n
 | 0, estagio anterior nao concluido | ninguem: a nota nao foi alterada                                                                                                                                                                                         | o orquestrador roda o estagio anterior                                |
 | 0, demais (dependencia, branch) | o humano resolve e marca `status: ativa`                                                                                                                                                                                    | o mesmo estagio                                                       |
 | 1 (o que)                  | o humano roda `/task-plan <nota>` com o orquestrador. O Plan retoma a **mesma** nota e atualiza Contrato, Definicao de pronto e o que for preciso. Depois o humano roda `/task-design <nota>`, que revisa o Design e pede a aprovacao de novo | o Build, na mesma branch (ver "Regras da retomada")                   |
-| 2 a 8                      | o humano resolve (ambiente, permissao, conflito, vault) e marca `status: ativa` (no Close, `status: em-revisao`)                                                                                                                | o mesmo estagio que parou                                             |
+| 2 a 7                      | o humano resolve (ambiente, permissao, conflito) e marca `status: ativa` (no Close, `status: em-revisao`)                                                                                                                       | o mesmo estagio que parou                                             |
+| 8 (Close)                  | o Close ja desfez o fechamento (passo 6 do `/task-close`): a nota voltou a pasta e ao estado de antes, com `status: bloqueada`. O humano corrige o vault e marca `status: em-revisao`                                              | o orquestrador ou a rotina agendada roda o Close                       |
 
 Regras da retomada:
 
