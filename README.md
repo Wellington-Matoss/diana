@@ -68,7 +68,8 @@ flowchart LR
     SH -->|CI vermelho: correção<br/>por subagente| SH
     A -.->|bloqueada| HU([Humano])
     HU -.->|o quê| P
-    HU -.->|demais casos:<br/>mesmo estágio| A
+    HU -.->|caso 0: Plan ou<br/>Design pendente| H
+    HU -.->|demais casos: mesmo estágio;<br/>caso 0: estágio anterior| A
     SH --> R{{Revisão e merge<br/>pelo humano}}
     R --> C[Close<br/>documentação]
 ```
@@ -157,6 +158,7 @@ Cada task é **uma nota** (Markdown, pensada para Obsidian) que atravessa todos 
 
 ```mermaid
 stateDiagram-v2
+    state "em-revisao" as em_revisao
     [*] --> ativa
     ativa --> aguardando: questionário enviado
     aguardando --> ativa: resposta recebida
@@ -165,6 +167,8 @@ stateDiagram-v2
     ativa --> em_revisao: PR aberto
     em_revisao --> concluida: merge + Close
     em_revisao --> pausada: PR fechado sem merge
+    em_revisao --> bloqueada: Close parou
+    bloqueada --> em_revisao: Close, humano resolveu
 ```
 
 O campo `estagio` (`plan` → `design` → `build` → `verify` → `ship`) diz o último estágio concluído. Uma parada não muda o `estagio`: muda só o `status` (ver `task-comum/regras.md`).
