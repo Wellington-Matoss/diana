@@ -38,7 +38,8 @@ Leia da memoria do agente e do `CLAUDE.md`: comandos de teste e lint; branch bas
 Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de resultado.
 
 - Sem argumento: resolva a task ativa como no Build.
-- A nota precisa ter `estagio: build` concluido. Senao, pare: o Build nao terminou.
+- A nota precisa ter `estagio: build` concluido, ou `estagio: verify` com `status: ativa` e a linha `build` concluida no Registro (retomada, ver "Reentrada" de `../task-comum/regras.md`). Senao, pare: o Build nao terminou.
+- A branch atual precisa ser a registrada na Execucao. Se nao for e der para trocar sem perder nada (sem mudanca fora de commit), troque. Senao, pare.
 - Crie a lista de tarefas com os passos 1 a 6.
 
 ## 1. Preparar

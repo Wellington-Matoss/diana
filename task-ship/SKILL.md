@@ -49,7 +49,8 @@ Se a task e de um repositorio que publica direto (contexto do projeto), o Ship e
 Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de resultado.
 
 - Sem argumento: resolva a task ativa como no Build.
-- A nota precisa ter `estagio: verify` concluido, sem bloqueante aberto. Senao, pare: o Verify nao aprovou.
+- A nota precisa ter `estagio: verify` concluido, sem bloqueante aberto, ou `estagio: ship` com `status: ativa` e a linha `verify` concluida no Registro (retomada, ver "Reentrada" de `../task-comum/regras.md`). Senao, pare: o Verify nao aprovou.
+- A branch atual precisa ser a registrada na Execucao. Se nao for e der para trocar sem perder nada (sem mudanca fora de commit), troque. Senao, pare. Repositorio sem PR: nao ha branch da task; confira a branch principal.
 - Crie a lista de tarefas com os passos 1 a 8.
 
 ## 1. Conferir o estado

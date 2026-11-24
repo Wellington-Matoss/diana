@@ -52,15 +52,16 @@ Alguns repositorios publicam direto na branch principal pela ferramenta do proje
 Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de resultado.
 
 - Sem argumento: se houver uma so task `ativa` com `estagio: design`, use-a. Se houver mais, tente casar pela branch atual. Se continuar ambiguo, pare e liste as notas candidatas na linha de resultado. Nao pergunte: nesta sessao ninguem responde.
-- A nota precisa ter `estagio: design` com aprovacao registrada. Senao, pare: o Design nao foi aprovado.
+- A nota precisa ter `estagio: design` com aprovacao registrada, ou `estagio: build` com `status: ativa` (retomada, ver "Reentrada" de `../task-comum/regras.md`). Senao, pare: o Design nao foi aprovado.
 - Notas de `depende-de` precisam estar `concluida`. Senao, pare.
 - Crie a lista de tarefas com os passos 1 a 6.
 
 ## 1. Preparar
 
 1. Sincronize o vault e leia a nota inteira: Definicao de pronto, Design (forma, plano de testes, etapas), Evidencias da investigacao.
-2. Em cada subprojeto que a task toca, crie a branch a partir da base do projeto, com a convencao de nomes do projeto. Task que toca dois repositorios: mesma branch nos dois.
+2. **Branch.** O workspace e do orquestrador; a branch e do Build. Em cada subprojeto que a task toca, crie a branch a partir da base do projeto, com a convencao de nomes do projeto. Se o workspace ja esta numa branch com o nome da convencao para esta task, use-a. Nunca trabalhe na branch base. Task que toca dois repositorios: mesma branch nos dois.
 3. **Linha de base:** antes de qualquer mudanca, rode a suite de testes, o lint e o build. Registre o resultado. Falha que ja existia **nao e desta task**: registre como pre-existente e nao corrija, a menos que esteja no escopo.
+4. **Retomada** (a Execucao ja registra branch e etapas): use a branch da Execucao, nao crie outra. Mantenha a linha de base registrada. Etapa com commit e conferida na Execucao, e sem mudanca no Design, nao e refeita: o subagente comeca pela primeira etapa que falta.
 
 ## 2. Escolher o modelo (automatico)
 

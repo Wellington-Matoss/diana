@@ -48,6 +48,7 @@ Crie a lista de tarefas com os passos 1 a 7.
 
 - Esta sessao pode continuar a conversa do Plan (task pequena) ou ser nova. Em sessao nova, a nota e a unica fonte: leia a nota, o glossario e o `CLAUDE.md` do subprojeto.
 - Confira se a nota ainda e verdadeira: veja os commits nos arquivos citados desde a data do Plan. Se algo mudou, registre e avalie se afeta a task.
+- Nota que ja tem Design aprovado e voltou do Plan (reentrada do caso 1 de `../task-comum/regras.md`): revise a secao existente, nao recomece. Marque as etapas que mudaram e peca a aprovacao de novo (passo 7).
 - Liste as "Perguntas em aberto" que o Design precisa resolver.
 
 ## 2. Prototipar (so se houver pergunta)

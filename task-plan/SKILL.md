@@ -38,6 +38,7 @@ Crie a lista de tarefas com os passos 1 a 9. Depois do passo 2, acrescente os pa
 ## 1. Receber a demanda
 
 - Entrada: descricao livre ou caminho de uma nota existente. Se for nota existente com `status: pausada`, complete essa nota. Nao crie outra.
+- Nota com `status: bloqueada` por problema de "o que" (caso 1 de `../task-comum/regras.md`): retome essa nota. Leia o motivo da parada, atualize Contrato, Definicao de pronto e o que mais for preciso, e reescreva a linha `plan` do Registro. Ao terminar, `status: ativa` e `estagio: plan`. Nao crie outra nota. O proximo passo e reaprovar o Design.
 - Reescreva a demanda em 2-3 linhas: o problema e o resultado esperado, na visao de quem pediu.
 - **LGPD:** nao leve para a nota dados pessoais de clientes (nome, CPF, CNPJ, contato). Use termos genericos ("Cliente X").
 
