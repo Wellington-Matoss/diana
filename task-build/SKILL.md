@@ -70,7 +70,7 @@ Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de 
 | Padrao: etapas bem especificadas, mudanca mecanica ou de logica comum                                     | Sonnet                      |
 | Alguma etapa toca seguranca, permissao, schema, migracao, concorrencia, transacao ou integridade de dados | Opus                        |
 | Fix cuja causa envolve mais de um subsistema                                                              | Opus                        |
-| Segunda tentativa de correcao ("Modelo" em `../task-comum/regras.md`)                                     | Opus                        |
+| Segunda tentativa de correcao                                                                             | Opus                        |
 
 Registre na nota o modelo e o motivo em uma linha. Ajuste os nomes dos modelos se o projeto definir outros na memoria.
 
@@ -93,7 +93,7 @@ Nao aceite o relatorio sem conferir:
 
 1. **Por etapa** (`git log` e `git show` de cada commit):
    - [ ] existe o commit da etapa;
-   - [ ] o commit tem o rodape `Task: <ID>`, como manda o `commits.md` do Ship. Esse rodape e o caminho do codigo ate o porque (blame -> commit -> ID -> nota), agora que o porque nao fica no comentario. Commit sem rodape: corrija antes do push (no Build os commits ainda sao locais);
+   - [ ] o commit tem o rodape `Task: <ID>` (`commits.md` do Ship). Commit sem rodape: corrija antes do push (no Build os commits ainda sao locais);
    - [ ] os testes planejados para a etapa existem e testam o criterio (nao detalhe interno);
    - [ ] o relatorio mostra o vermelho **pelo motivo certo** antes do verde;
    - [ ] arquivos alterados estao dentro do que a etapa previa (ou o desvio esta registrado);

@@ -27,7 +27,7 @@ Siga "Quando parar", "Limites de tentativas" e "Saida de toda parada" de `../tas
 
 No Ship, o caso 2 aparece quando o push ou o PR exigiria acao sem volta ou em branch protegida. O caso 5 aparece no passo 1; o caso 6, no passo 2; o caso 7, nos passos 4 e 5. O caso 4 aparece quando a correcao por subagente dos passos 2 ou 6 passa do limite.
 
-**Sem subagente.** Siga "Sem subagente" de `../task-comum/regras.md`, como no paragrafo "Sem subagente" do `/task-build` passo 3: o proprio Ship faz a correcao numa passagem separada.
+**Sem subagente.** Siga "Sem subagente" de `../task-comum/regras.md`: o proprio Ship faz a correcao numa passagem separada.
 
 ## Contexto do projeto
 
@@ -58,7 +58,7 @@ Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de 
 1. Branch atual nao e protegida.
 2. `git status` limpo: nada fora dos commits da task.
 3. O diff (`git diff <base>...HEAD`) so tem arquivos da task. Arquivo nao relacionado: remova do diff com um commit `chore: remove alteracao fora do escopo` e registre.
-4. Todo commit da task tem o rodape `Task: <ID>` (`referencias/commits.md`): e o caminho do codigo ate o porque, que nao fica no comentario. Commit local sem rodape: corrija a mensagem antes do push. Commit ja enviado sem rodape: nao reescreva o historico; registre o hash na nota.
+4. Todo commit da task tem o rodape `Task: <ID>` (`referencias/commits.md`). Commit local sem rodape: corrija a mensagem antes do push. Commit ja enviado sem rodape: nao reescreva o historico; registre o hash na nota.
 5. Procure segredos no diff: `.env`, chave, token, certificado, senha, dado pessoal. Encontrou: caso 5.
 
 ## 2. Integrar a base
@@ -86,7 +86,7 @@ Sem changelog no projeto: `skip: projeto sem changelog`.
 
 1. **Titulo:** `tipo(escopo): assunto` (`referencias/commits.md`). No merge com squash, o titulo vira a mensagem do commit na base.
 2. **Corpo:** `templates/pr.md`, com o conteudo do Verify (resumo do diff, evidencia, Atencao, sugestoes) e do Build (desvios). Ate ~40 linhas. Secao vazia sai, exceto "Atencao", que mostra "Nada." quando vazia.
-3. Abra **pronto para revisao** (nao rascunho), para a base do projeto: `gh pr create --base <base> --head <branch> --title "<titulo>" --body-file <arquivo>`.
+3. Abra **pronto para revisao** (nao rascunho), para a base do projeto: `gh pr create --base <base> --head <branch> --title "<titulo>" --body-file <arquivo>`. Se a branch ja tem PR aberto (Ship retomado), nao abra outro: atualize o titulo e o corpo dele (`gh pr edit`).
 4. Dois repositorios: abra os dois PRs e coloque o link de um no outro.
 5. **Nao faca merge.**
 

@@ -122,7 +122,7 @@ Depois do merge, atualiza a documentação de arquitetura para descrever **como 
 | `task-ship`   | Ship    | orquestrador, após o Verify | `referencias/commits.md`, `templates/` (PR, lições)                                                                   |
 | `task-close`  | Close   | orquestrador após o merge, ou rotina agendada (`/task-close [nota]`) | —                                                                                                                     |
 
-A pasta `task-comum/` não é skill: guarda as regras comuns do Build, do Verify e do Ship.
+A pasta `task-comum/` não é skill: guarda as regras comuns (`task-comum/regras.md`).
 
 Todas usam `disable-model-invocation: true`: só rodam quando chamadas de fora (pelo humano ou por um orquestrador), nunca por iniciativa do modelo. Por isso **uma skill não chama a seguinte**: o Claude Code recusa a chamada de uma skill com essa opção pela ferramenta Skill (testado em 23/11/2026, Claude Code 2.1.330). Cada estágio autônomo termina com uma linha de resultado para o orquestrador (ver [Contrato do orquestrador](#contrato-do-orquestrador)).
 
@@ -243,7 +243,7 @@ Checklist do contexto que as skills leem (memória do agente ou `CLAUDE.md`):
 - [ ] **Comandos** por subprojeto: teste, lint, build, type check
 - [ ] **Testes:** guia de testes, banco de teste, limitações conhecidas (ex.: sem teste de componente)
 - [ ] **Verificação no app:** skill `verify` do projeto, ambiente isolado, conta de teste
-- [ ] **Cópia isolada para revisores:** só se o projeto precisar de um jeito diferente do padrão (pasta temporária do sistema ou da sessão, fora de qualquer repositório, nunca no clone principal nem no workspace de outra frente), por exemplo para instalar as dependências da cópia de forma mais barata
+- [ ] **Cópia isolada para revisores:** só se o projeto precisar de um jeito diferente do padrão (ver "Cópia isolada" no passo 3 do `task-verify`)
 - [ ] **Lentes do projeto** para o revisor de Padrões (ex.: "ação de negócio gera log de auditoria")
 - [ ] **Changelog para o usuário final:** arquivo, formato e regras de curadoria (se houver)
 - [ ] **CI:** existe? quais checks?
@@ -254,7 +254,7 @@ Checklist do contexto que as skills leem (memória do agente ou `CLAUDE.md`):
 
 ## Instalação
 
-As skills se referenciam entre si (por exemplo, o Build usa o padrão de commit do Ship), então **instale as seis juntas, com a pasta `task-comum`**. Essa pasta não é skill (não tem `SKILL.md`): guarda as regras comuns do Build, do Verify e do Ship (`task-comum/regras.md`), que as skills citam por caminho relativo. O `task-*` dos comandos abaixo já a inclui.
+As skills se referenciam entre si (por exemplo, o Build usa o padrão de commit do Ship), então **instale as seis juntas, com a pasta `task-comum`**. Essa pasta não é skill (não tem `SKILL.md`): guarda as regras comuns (`task-comum/regras.md`), que as skills citam por caminho relativo. O `task-*` dos comandos abaixo já a inclui.
 
 **Para todos os seus projetos** (pessoal):
 
