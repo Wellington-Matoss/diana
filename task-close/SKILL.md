@@ -9,13 +9,17 @@ disable-model-invocation: true
 
 Roda **depois do merge**. A documentacao passa a descrever o codigo que esta na base, entao so faz sentido com o PR mergeado. Autonomo: aplica as mudancas no vault (reversiveis pelo git) e relata o que fez.
 
+## Quando parar
+
+Siga "Quando parar", "Saida de toda parada" e "Reentrada" de `../task-comum/regras.md`, inclusive o paragrafo do Close. No Close, o caso 7 aparece no passo 1 (consulta do PR sem autenticacao) e o caso 8, no passo 6. PR ainda aberto nao e parada.
+
 ## Contexto do projeto
 
 Memoria do agente e `CLAUDE.md`: onde ficam as notas de arquitetura, as decisoes, a lista de debitos tecnicos e a pasta de tasks concluidas; regras e verificacao automatica do vault (se houver).
 
 ## 0. Escolher as tasks
 
-- Com argumento: so aquela nota.
+- Com argumento: so aquela nota. Ela precisa estar `em-revisao` (ou vir do Ship de um repositorio sem PR). Senao, caso 0.
 - Sem argumento: todas as notas com `status: em-revisao`.
 - Task de repositorio sem PR (chamada pelo orquestrador logo apos o Ship publicar): pule o passo 1 e feche direto; no Resultado, "publicada no commit <hash>" no lugar do PR.
 - Sincronize o vault.
@@ -27,7 +31,7 @@ Para cada task, consulte cada PR da nota (`gh pr view <url> --json state,mergedA
 | Estado                  | Acao                                                                          |
 | ----------------------- | ----------------------------------------------------------------------------- |
 | todos mergeados         | fechar (passos 2 a 6)                                                         |
-| algum aberto            | pular: ainda em revisao                                                       |
+| algum aberto            | pular: ainda em revisao (nao e parada)                                        |
 | algum fechado sem merge | `status: pausada`, registrar "PR #n fechado sem merge em <data>" e nao fechar |
 
 ## 2. Atualizar a documentacao de arquitetura
@@ -57,9 +61,11 @@ Para cada task, consulte cada PR da nota (`gh pr view <url> --json state,mergedA
 
 ## 6. Conferir e sincronizar
 
-- Rode a verificacao automatica do vault do projeto, se houver. Zero erro nas notas que este fechamento tocou. Erro em nota alheia: so relate.
+- Rode a verificacao automatica do vault do projeto, se houver. Erro numa nota que este fechamento tocou: caso 8 para essa task, sem sincronizar a nota com erro. Erro em nota alheia: so relate.
 - Sincronize o vault (commit `<ID>: concluida`).
 
 ## Relatorio
 
-Por task: fechada | ainda em revisao | pausada (PR fechado sem merge). Para as fechadas: notas de documentacao alteradas, debitos removidos e criados, resultado da verificacao do vault, commit do vault. Por ultimo, se houver: **decisoes propostas** aguardando o OK do usuario.
+Por task: fechada | ainda em revisao | pausada (PR fechado sem merge) | parada (caso e motivo). Para as fechadas: notas de documentacao alteradas, debitos removidos e criados, resultado da verificacao do vault, commit do vault. Por ultimo, se houver: **decisoes propostas** aguardando o OK do usuario.
+
+A ultima linha da resposta e a linha de resultado do Close, no formato de `../task-comum/regras.md`.
