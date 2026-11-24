@@ -71,6 +71,7 @@ Use subagentes leves, somente leitura. Nao gaste modelo forte em leitura.
 - **Fatos externos** (API de terceiros, biblioteca, norma): pesquise em fonte primaria e salve as conclusoes com citacao na nota da task.
 - **Glossario:** leia o glossario do projeto e use os termos dele.
 - **Prova com dado real (condicional):** se a task cria ou muda regra, metrica, filtro ou formato sobre dado que ja existe, teste a premissa contra o dado antes da entrevista. Um subagente de contexto limpo roda a consulta **so em leitura** e devolve **so numero agregado** (contagem, minimo, mediana, maximo; com menos de 5 casos, so a contagem). A consulta tambem conta, so no agregado, os registros fora do padrao que a regra vai ler (ver a categoria limite do passo 5). Nunca registro individual nem dado pessoal. Nunca producao, a menos que o contexto do projeto defina uma fonte autorizada. Prova que contradiz a premissa muda a proposta antes de chegar ao usuario. Sem regra sobre dado existente: `nao se aplica - <motivo>`. Sem fonte so leitura disponivel: `prova indisponivel - <motivo>`.
+- **Consumidores do campo (condicional):** se a proposta tira, renomeia ou muda o formato de um campo visivel a outra parte (resposta, mensagem, campo gravado), um subagente so leitura lista quem consome o campo (telas, outros servicos, integracoes, relatorios) e o que cada um faz sem ele. Sem campo assim: `nao se aplica - <motivo>`.
 - Execute os passos de investigacao do arquivo de tipo.
 
 ## 4. Explicar (como e hoje)
@@ -103,11 +104,11 @@ Mapeie as decisoes como uma arvore: cada decisao abre as decisoes que dependem d
     - **feliz:** o caminho normal;
     - **erro esperado:** entrada invalida, recusa de negocio, falta de permissao;
     - **repeticao:** clique duplo, pedido duplicado, duas requisicoes ao mesmo tempo;
-    - **limite:** zero, negativo, vazio, vencido, maximo; dado ja gravado fora do padrao (campo obrigatorio ausente, lista vazia, referencia para registro que nao existe mais), quando a regra le dado gravado;
+    - **limite:** zero, negativo, vazio, vencido, maximo; dado ja gravado fora do padrao (campo obrigatorio ausente, lista vazia, referencia para registro que nao existe mais), quando a regra le dado gravado; entrada de fora do sistema com tipo inesperado (lista, numero, texto, vazio), quando a task le arquivo editado a mao, configuracao ou payload externo. Sao dois casos distintos: um e dado nosso em formato antigo; o outro e formato que nao controlamos;
     - **acesso indevido:** usuario A lendo ou alterando dado de B.
 
     Categoria que nao se aplica: `nao se aplica - <motivo>`. Cada frase vira um teste com o mesmo titulo.
-  - **Contrato (`C1`, `C2`...):** o que outra parte do sistema, o banco ou o usuario enxerga e fica **fixo**: rota e metodo, formato de entrada e resposta, codigo de status e de erro, campo gravado, permissao por perfil, log ou auditoria gerado, texto de tela que importa. Nao repete as frases. Ate 5 sub-regras por item; mais que isso, quebre em outro item. **Tudo o que nao esta no Contrato e sugestao:** o Design e o Build podem mudar sem perguntar. Mudar o Contrato e mudar o QUE.
+  - **Contrato (`C1`, `C2`...):** o que outra parte do sistema, o banco ou o usuario enxerga e fica **fixo**: rota e metodo, formato de entrada e resposta, codigo de status e de erro, campo gravado, permissao por perfil, log ou auditoria gerado, texto de tela que importa. Nao repete as frases. Ate 5 sub-regras por item; mais que isso, quebre em outro item. **Tudo o que nao esta no Contrato e sugestao:** o Design e o Build podem mudar sem perguntar. Mudar o Contrato e mudar o QUE. Item que tira, renomeia ou muda o formato de um campo so fecha com os consumidores listados (passo 3); o efeito sobre cada um vira pergunta nesta rodada.
 - Se uma pergunta precisa de um fato, mande um subagente buscar e continue com as outras perguntas. So as perguntas que dependem desse fato esperam.
 - **Termos do dominio:** se o usuario usar termo vago ou em conflito com o glossario, aponte na hora e proponha o termo canonico. Se o codigo contradiz o que o usuario disse, mostre a contradicao.
 - **Decisao que e de outra pessoa** (gestor, cliente, outro time): nao decida na sessao. Gere um questionario com `templates/questionario.md`, salve na nota, marque `status: aguardando` e pare. A task continua quando a resposta chegar.
@@ -146,6 +147,7 @@ Confira antes de encerrar:
 
 - [ ] Definicao de pronto nas 5 categorias (ou `nao se aplica - motivo`) e Contrato aprovados.
 - [ ] Prova com dado real feita, ou registrada como `nao se aplica` / `indisponivel` com motivo.
+- [ ] Consumidores listados para item de Contrato que tira ou muda campo.
 - [ ] Nenhuma pergunta bloqueante aberta.
 - [ ] Teach-back confirmado.
 - [ ] Spec salva e vault sincronizado.
