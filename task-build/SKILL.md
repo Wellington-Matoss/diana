@@ -70,7 +70,7 @@ Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de 
 | Padrao: etapas bem especificadas, mudanca mecanica ou de logica comum                                     | Sonnet                      |
 | Alguma etapa toca seguranca, permissao, schema, migracao, concorrencia, transacao ou integridade de dados | Opus                        |
 | Fix cuja causa envolve mais de um subsistema                                                              | Opus                        |
-| Segunda tentativa de correcao ("Modelo" em `../task-comum/regras.md`)                                     | Opus                        |
+| Segunda tentativa de correcao                                                                             | Opus                        |
 
 Registre na nota o modelo e o motivo em uma linha. Ajuste os nomes dos modelos se o projeto definir outros na memoria.
 
