@@ -33,11 +33,16 @@ Este arquivo descreve o metodo. Ferramentas e contexto do projeto ficam fora del
 
 ## 0. Abrir a lista de tarefas
 
-Crie a lista de tarefas com os passos 1 a 9. Depois do passo 2, acrescente os passos do arquivo de tipo e, se houver, do arquivo de tamanho.
+Crie a lista de tarefas com os passos 1 a 9. Depois do passo 2, acrescente os passos do arquivo de tipo e, se houver, do arquivo de tamanho. Reentrada depois de parada "o que" (passo 1): a lista tem so os passos 1, 3, 5, 6, 7 e 9.
 
 ## 1. Receber a demanda
 
 - Entrada: descricao livre ou caminho de uma nota existente. Se for nota existente com `status: pausada`, complete essa nota. Nao crie outra.
+- Nota com `status: bloqueada` por problema de "o que" (caso 1 de `../task-comum/regras.md`): retome essa nota. A nota e o ID continuam os mesmos. Leia a linha `Parada`. Rodam de novo so:
+  - passo 3: so o que o problema tocou, inclusive Consumidores do campo, se for o caso;
+  - passo 5: so a fronteira afetada (Contrato, Definicao de pronto e o que depender deles);
+  - passos 6, 7 e 9. No passo 7, **nao** rode 7.1 (definir ID) nem 7.2 (criar a nota): atualize a nota existente e reescreva a linha `plan` do Registro.
+  - Ao terminar: `status: ativa` e `estagio: plan`. As linhas antigas do Registro ficam ate cada estagio concluir de novo. O proximo passo e reaprovar o Design.
 - Reescreva a demanda em 2-3 linhas: o problema e o resultado esperado, na visao de quem pediu.
 - **LGPD:** nao leve para a nota dados pessoais de clientes (nome, CPF, CNPJ, contato). Use termos genericos ("Cliente X").
 

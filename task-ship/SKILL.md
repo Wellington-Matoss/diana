@@ -17,18 +17,17 @@ Nota (verify concluido) -> 1 Conferir -> 2 Integrar base -> 3 Changelog -> 4 Pus
 ## Principios
 
 - **Nunca faca merge.** Nunca force push. Nunca escreva em branch protegida. Nunca use `--no-verify`. Nunca marque um check como nao obrigatorio.
-- **Nada de segredo no diff.** Encontrou: pare.
+- **Nada de segredo no diff.** Encontrou: pare (caso 5).
 - **O PR e para o usuario ler em um minuto.** Sem preambulo, sem repetir o que o diff ja mostra.
 - **Nenhum passo some em silencio:** `skip: <motivo>`.
 
 ## Quando parar
 
-Pare, registre `status: bloqueada` com o motivo e encerre com `RESULTADO: ship bloqueada - <caso e motivo>` (ver "Relatorio final") **somente** se:
+Siga "Quando parar", "Limites de tentativas" e "Saida de toda parada" de `../task-comum/regras.md`. Os casos proprios do Ship (5, 6 e 7) estao la.
 
-1. o diff contem segredo, credencial, `.env` ou dado de cliente;
-2. o push ou o PR exigiria acao sem volta ou em branch protegida, ou a autenticacao do `git`/`gh` nao esta disponivel;
-3. a integracao da base gera conflito na logica da task (nao mecanico);
-4. o CI falha pelo diff apos 3 rodadas de correcao.
+No Ship, o caso 2 aparece quando o push ou o PR exigiria acao sem volta ou em branch protegida. O caso 5 aparece no passo 1; o caso 6, no passo 2; o caso 7, nos passos 4 e 5. O caso 4 aparece quando a correcao por subagente dos passos 2 ou 6 passa do limite.
+
+**Sem subagente.** Siga "Sem subagente" de `../task-comum/regras.md`, como no paragrafo "Sem subagente" do `/task-build` passo 3: o proprio Ship faz a correcao numa passagem separada.
 
 ## Contexto do projeto
 
@@ -40,15 +39,18 @@ Se a task e de um repositorio que publica direto (contexto do projeto), o Ship e
 
 1. **Conferir o estado** (passo 1): so os arquivos listados na Execucao estao alterados; nada de segredo.
 2. **Pular** os passos 2, 4, 5 e 6 (`skip: repositorio sem PR`). Changelog (passo 3) so se o contexto pedir.
-3. **Publicar** pela ferramenta do projeto, passando exatamente os arquivos da Execucao **e a nota da task**, com a mensagem de commit do vocabulario do projeto para o estagio `ship`. Siga a saida da ferramenta: erro de validacao, corrija e rode de novo; conflito ou recusa, caso 2 de "Quando parar".
+3. **Publicar** pela ferramenta do projeto, passando exatamente os arquivos da Execucao **e a nota da task**, com a mensagem de commit do vocabulario do projeto para o estagio `ship`. Siga a saida da ferramenta: erro de validacao, corrija e rode de novo; conflito, caso 6; recusa, caso 7.
 4. **Nota** (passo 7): `estagio: ship`; secao `## Entrega` com o commit publicado ("publicada no commit <hash>"), sem PR.
 5. **Licoes** (passo 8) igual.
 6. **Fechar:** como nao ha merge a esperar, o orquestrador chama o `/task-close <nota>` em seguida. Nao chame voce: encerre com `RESULTADO: ship concluido - publicada no commit <hash>`.
 
 ## 0. Conferir a entrada
 
+Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de resultado.
+
 - Sem argumento: resolva a task ativa como no Build.
 - A nota precisa ter `estagio: verify` concluido, sem bloqueante aberto. Senao, pare: o Verify nao aprovou.
+- A branch atual precisa ser a registrada na Execucao. Se nao for e der para trocar sem perder nada (sem mudanca fora de commit), troque. Senao, pare. Repositorio sem PR: nao ha branch da task; confira a branch principal.
 - Crie a lista de tarefas com os passos 1 a 8.
 
 ## 1. Conferir o estado
@@ -57,14 +59,14 @@ Se a task e de um repositorio que publica direto (contexto do projeto), o Ship e
 2. `git status` limpo: nada fora dos commits da task.
 3. O diff (`git diff <base>...HEAD`) so tem arquivos da task. Arquivo nao relacionado: remova do diff com um commit `chore: remove alteracao fora do escopo` e registre.
 4. Todo commit da task tem o rodape `Task: <ID>` (`referencias/commits.md`): e o caminho do codigo ate o porque, que nao fica no comentario. Commit local sem rodape: corrija a mensagem antes do push. Commit ja enviado sem rodape: nao reescreva o historico; registre o hash na nota.
-5. Procure segredos no diff: `.env`, chave, token, certificado, senha, dado pessoal. Encontrou: caso 1.
+5. Procure segredos no diff: `.env`, chave, token, certificado, senha, dado pessoal. Encontrou: caso 5.
 
 ## 2. Integrar a base
 
 1. `git fetch` e confira se a branch esta atras da base.
 2. Atras: faca merge da base na branch (nao rebase: preserva os commits ja verificados).
-3. Conflito **mecanico** (lockfile, import, formatacao, arquivos independentes): resolva. Conflito na **logica** da task: caso 3.
-4. Houve merge da base: rode de novo testes, lint e build. Vermelho: volte ao Build com o erro (uma rodada); persistindo, caso 3.
+3. Conflito **mecanico** (lockfile, import, formatacao, arquivos independentes): resolva. Conflito na **logica** da task: caso 6.
+4. Houve merge da base: rode de novo testes, lint e build. Vermelho: "Correcao por subagente" de `../task-comum/regras.md`, com o erro. Limite: tabela do mesmo arquivo; persistindo, caso 4.
 
 ## 3. Changelog do projeto (se houver)
 
@@ -94,8 +96,8 @@ Projeto sem CI: `skip: projeto sem CI`.
 
 1. Espere os checks terminarem (`gh pr checks <pr> --watch`).
 2. Verde: siga.
-3. Falha **causada pelo diff**: leia o primeiro erro acionavel no log, dispare um subagente do Build com o erro, commit, push, espere de novo. Maximo 3 rodadas; depois, caso 4.
-4. Falha **nao causada pelo diff** (instabilidade, infraestrutura, falha que ja existe na base): rode de novo uma vez. Persistindo: comente no PR com a evidencia e acrescente em "Atencao".
+3. Falha **causada pelo diff**: leia o primeiro erro acionavel no log e aplique "Correcao por subagente" de `../task-comum/regras.md`, com o erro (inclui o ataque a correcao antes do push). Push e espere de novo. Limite: tabela do mesmo arquivo; depois, caso 4.
+4. Falha **nao causada pelo diff** (instabilidade, infraestrutura, falha que ja existe na base): siga a nota "CI vermelho nao causado pelo diff" de `../task-comum/regras.md`. Persistindo, comente no PR com a evidencia.
 5. Nunca mude o esperado de um teste para o CI passar.
 
 ## 7. Atualizar a nota
@@ -111,7 +113,7 @@ Leia o "Registro de etapas", a Execucao e a Verificacao da nota. **Registre so s
 
 Conta como licao:
 
-- rodada de volta ao Build (por que o Build nao pegou antes?);
+- correcao por subagente no Verify ou no Ship (por que o Build nao pegou antes?);
 - bloqueio ou parada (o que faltou: contexto, permissao, ferramenta?);
 - comando, caminho ou convencao que o agente teve que descobrir e nao estava no contexto do projeto;
 - revisor que deixou passar algo que o CI ou outro revisor pegou;
@@ -134,6 +136,6 @@ Uma mensagem curta ao usuario:
 - Atencao: quantidade de itens (ou "nada");
 - Sugestoes para o projeto: quantidade (ou "nenhuma");
 - Licoes registradas: quantidade (ou "nenhuma");
-- lembrete: o merge e do usuario; depois do merge, `/task-close` (ou a rotina agendada) fecha a task.
+- lembrete: o merge e do usuario; depois do merge, o orquestrador chama o `/task-close <nota>`, ou uma rotina agendada fecha a task.
 
 A ultima linha da resposta e `RESULTADO: ship concluido - PR <url>` (com dois PRs, as duas URLs).

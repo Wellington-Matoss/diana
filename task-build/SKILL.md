@@ -29,14 +29,9 @@ Nota (design aprovado) -> 1 Preparar -> 2 Modelo -> 3 Delegar -> 4 Conferir -> 5
 
 ## Quando parar
 
-Pare, registre na nota com `status: bloqueada` e o motivo, sincronize o vault e encerre com `RESULTADO: build bloqueada - <caso e motivo>` (ver passo 6) **somente** se:
+Siga "Quando parar", "Limites de tentativas" e "Saida de toda parada" de `../task-comum/regras.md`. O Build nao tem caso proprio.
 
-1. cumprir uma frase da Definicao de pronto exige mudar **um item do Contrato, o escopo ou o produto** (o QUE);
-2. o proximo passo **nao tem volta**: alterar dado real, escrever em branch protegida, force push, apagar dados;
-3. ha **ambiguidade de seguranca ou permissao** (autenticacao, autorizacao, segredo, dado de cliente);
-4. **bloqueio tecnico** persiste apos 2 rodadas de correcao (ambiente, credencial, dependencia quebrada).
-
-Todo o resto: escolha a opcao mais conservadora, registre o motivo e siga.
+No Build, o caso 1 aparece na conferencia do passo 4 (item do Contrato que mudou) e no relatorio do subagente.
 
 ## Contexto do projeto
 
@@ -54,16 +49,19 @@ Alguns repositorios publicam direto na branch principal pela ferramenta do proje
 
 ## 0. Conferir a entrada
 
-- Sem argumento: se houver uma so task `ativa` com `estagio: design`, use-a. Se houver mais, tente casar pela branch atual. Se continuar ambiguo, pare e liste (caso unico em que se pergunta).
+Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de resultado.
+
+- Sem argumento: se houver uma so task `ativa` com `estagio: design`, use-a. Se houver mais, tente casar pela branch atual. Se continuar ambiguo, pare e liste as notas candidatas na linha de resultado. Nao pergunte: nesta sessao ninguem responde.
 - A nota precisa ter `estagio: design` com aprovacao registrada. Senao, pare: o Design nao foi aprovado.
-- Notas de `depende-de` precisam estar `concluida`. Senao, pare (caso 1).
+- Notas de `depende-de` precisam estar `concluida`. Senao, pare.
 - Crie a lista de tarefas com os passos 1 a 6.
 
 ## 1. Preparar
 
 1. Sincronize o vault e leia a nota inteira: Definicao de pronto, Design (forma, plano de testes, etapas), Evidencias da investigacao.
-2. Em cada subprojeto que a task toca, crie a branch a partir da base do projeto, com a convencao de nomes do projeto. Task que toca dois repositorios: mesma branch nos dois.
+2. **Branch.** O workspace e do orquestrador; a branch e do Build. Em cada subprojeto que a task toca, crie a branch a partir da base do projeto, com a convencao de nomes do projeto. Se o workspace ja esta numa branch com o nome da convencao para esta task, use-a. Nunca trabalhe na branch base. Task que toca dois repositorios: mesma branch nos dois.
 3. **Linha de base:** antes de qualquer mudanca, rode a suite de testes, o lint e o build. Registre o resultado. Falha que ja existia **nao e desta task**: registre como pre-existente e nao corrija, a menos que esteja no escopo.
+4. **Retomada** (a Execucao ja registra branch e etapas): use a branch da Execucao e mantenha a linha de base registrada. Quais etapas refazer: "Build retomado" em `../task-comum/regras.md`.
 
 ## 2. Escolher o modelo (automatico)
 
@@ -72,7 +70,7 @@ Alguns repositorios publicam direto na branch principal pela ferramenta do proje
 | Padrao: etapas bem especificadas, mudanca mecanica ou de logica comum                                     | Sonnet                      |
 | Alguma etapa toca seguranca, permissao, schema, migracao, concorrencia, transacao ou integridade de dados | Opus                        |
 | Fix cuja causa envolve mais de um subsistema                                                              | Opus                        |
-| Uma etapa falhou 2 vezes com Sonnet                                                                       | Opus para a rodada seguinte |
+| Segunda tentativa de correcao ("Modelo" em `../task-comum/regras.md`)                                     | Opus                        |
 
 Registre na nota o modelo e o motivo em uma linha. Ajuste os nomes dos modelos se o projeto definir outros na memoria.
 
@@ -87,7 +85,7 @@ O subagente:
 - ao fim de cada etapa, com a suite verde, faz **um commit local** (excecao: fix, ver "Por tipo");
 - devolve o relatorio no formato do brief, com a evidencia de cada teste (saida vermelha e verde).
 
-**Sem subagente.** Se nao for possivel disparar subagente, o lider executa as etapas ele mesmo, com o mesmo ciclo de `referencias/tdd.md` e o mesmo relatorio do brief. O passo 4 continua igual, como se o trabalho fosse de outro: rode de novo testes, lint e build e compare os testes com o plano. A reprovacao vira uma nova passagem, com o brief original + a lista objetiva do que falhou. Registre o desvio "sem subagente" na nota.
+**Sem subagente.** Siga "Sem subagente" de `../task-comum/regras.md`. No Build, o lider executa as etapas com o mesmo ciclo de `referencias/tdd.md` e o mesmo relatorio do brief. O passo 4 continua igual.
 
 ## 4. Conferir (lider)
 
@@ -103,14 +101,14 @@ Nao aceite o relatorio sem conferir:
    - [ ] se a etapa le dado ja gravado, a Definicao de pronto tem frase para dado fora do padrao (categoria limite do Plan). Senao, o codigo nao decide o comportamento e o caso vai aos candidatos a Atencao: "dado gravado fora do padrao sem frase na Definicao de pronto".
 2. **Testes do plano intactos:** compare os testes com o plano. Assercao enfraquecida, esperado trocado, teste pulado (`skip`, `only`, `todo`) ou teste do plano removido = reprovado. No fix, nenhum teste do plano termina como falha esperada: a marca do commit de reproducao sai no commit da correcao.
 3. **Rode voce mesmo:** suite completa, lint e build. Compare com a linha de base. Apontamento novo de lint nos arquivos tocados = reprovado. Apontamento que pode ser decisao de dominio: escolha a opcao conservadora, registre e marque "Atencao".
-4. **Reprovado:** dispare um **subagente novo** com o brief original + a lista objetiva do que falhou (nao continue o subagente anterior). Maximo de 2 rodadas; na segunda, aplique a regra de modelo. Persistiu: caso 4 de "Quando parar".
+4. **Reprovado:** dispare um **subagente novo** com o brief original + a lista objetiva do que falhou (nao continue o subagente anterior). Cada nova passagem e uma tentativa de correcao: limite e modelo em `../task-comum/regras.md`. Persistiu: caso 4.
 
 ## 5. Limpar o diff
 
 Siga `referencias/limpeza.md` sobre o diff da task inteira, em duas passagens:
 
 1. **(a) Limpeza geral:** o lider ou um subagente aplica a secao "(a) Limpeza geral".
-2. **(b) Comentarios e supressoes:** dispare um **subagente de contexto limpo** com a secao "(b) Comentarios e supressoes" e o escopo do diff. Quem escreveu tende a defender o proprio comentario. Sem subagente: vale o paragrafo "Sem subagente" do passo 3, numa passagem separada que rele o diff do zero.
+2. **(b) Comentarios e supressoes:** dispare um **subagente de contexto limpo** com a secao "(b) Comentarios e supressoes" e o escopo do diff. Quem escreveu tende a defender o proprio comentario. Sem subagente: vale "Sem subagente" de `../task-comum/regras.md`, numa passagem separada que rele o diff do zero.
 3. **Conferir (lider):** leia o relatorio e o diff da passagem (b). Rejeite edicao que muda comportamento ou que sai do diff da task. Rode de novo testes, lint e build. Reverta qualquer edicao de limpeza que quebrar algo.
 4. **Commit local** no padrao do `commits.md` do Ship: `refactor(<escopo>): limpa o diff da task`, com o rodape `Task: <ID>`.
 

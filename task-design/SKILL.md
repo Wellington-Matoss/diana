@@ -48,6 +48,7 @@ Crie a lista de tarefas com os passos 1 a 7.
 
 - Esta sessao pode continuar a conversa do Plan (task pequena) ou ser nova. Em sessao nova, a nota e a unica fonte: leia a nota, o glossario e o `CLAUDE.md` do subprojeto.
 - Confira se a nota ainda e verdadeira: veja os commits nos arquivos citados desde a data do Plan. Se algo mudou, registre e avalie se afeta a task.
+- Nota que ja tem Design aprovado e voltou do Plan (reentrada do caso 1 de `../task-comum/regras.md`): revise a secao existente, nao recomece. Marque cada etapa que mudou com `[alterada em AAAA-MM-DD]`, no formato de `templates/design.md`, e peca a aprovacao de novo (passo 7). O que o Build refaz: "Build retomado" em `../task-comum/regras.md`.
 - Liste as "Perguntas em aberto" que o Design precisa resolver.
 
 ## 2. Prototipar (so se houver pergunta)
@@ -146,4 +147,4 @@ Fix focado ou ajuste pequeno: passo 2 `skip`; passo 4 com uma forma so e o motiv
 
 Esta e a **ultima aprovacao do usuario antes do PR**. Diga isso na mensagem de aprovacao do passo 7.
 
-Proximo passo: **`/task-build <nota>`**, de preferencia em **sessao nova**. A nota e o handoff: o Build nao precisa desta conversa. Do Build em diante o fluxo segue sem o usuario: o orquestrador chama Build -> Verify -> Ship, um estagio por sessao, ate abrir o PR.
+Proximo passo: **`/task-build <nota>`**, em **sessao nova**. A nota e o handoff: o Build nao precisa desta conversa. Do Build em diante o fluxo segue sem o usuario: o orquestrador chama Build -> Verify -> Ship, um estagio por sessao, ate abrir o PR.

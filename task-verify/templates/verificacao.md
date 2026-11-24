@@ -1,7 +1,7 @@
 ## Verificacao
 
 **Modo:** <leve | completo> - <motivo>
-**Rodadas de volta ao Build:** <n>
+**Rodadas de correcao por subagente:** <n>
 **Testes:** `<comando>` -> <resultado>   **Lint:** <resultado nos arquivos/linhas do diff>
 **Copia isolada:** <local> · linha de base reproduzida <sim|nao> · removida <sim|nao>   <!-- so se algum revisor executou codigo -->
 
