@@ -3,6 +3,7 @@
 **Modo:** <leve | completo> - <motivo>
 **Rodadas de volta ao Build:** <n>
 **Testes:** `<comando>` -> <resultado>   **Lint:** <resultado nos arquivos/linhas do diff>
+**Copia isolada:** <local> · linha de base reproduzida <sim|nao> · removida <sim|nao>   <!-- so se algum revisor executou codigo -->
 
 ### Comprovacao no app
 **Ambiente:** <local isolado com seed | outro, conforme contexto do projeto>
