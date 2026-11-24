@@ -21,7 +21,7 @@ Nesses estagios, o agente nao pergunta: decide, registra o motivo e segue. Ele p
 | Caso | Nome             | Estagio      | Quando                                                                                                         |
 | ---- | ---------------- | ------------ | -------------------------------------------------------------------------------------------------------------- |
 | 5    | segredo          | Ship         | o diff contem segredo ou dado pessoal                                                                          |
-| 6    | conflito na base | Ship         | integrar a base gera conflito na logica da task (conflito mecanico nao conta)                                 |
+| 6    | conflito na base | Ship         | integrar a base ou publicar direto gera conflito na logica da task (conflito mecanico nao conta)              |
 | 7    | autenticacao     | Ship e Close | a autenticacao para push, PR, consulta do PR ou publicacao nao esta disponivel, ou a ferramenta de publicacao recusa |
 | 8    | vault com erro   | Close        | a verificacao automatica do vault continua com erro numa nota que o Close tocou, depois do limite de tentativas |
 
