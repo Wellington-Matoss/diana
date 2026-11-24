@@ -63,6 +63,26 @@ REGISTRO_COMPLETO = """- plan: concluido em 2026-11-02 · tipo feature · tamanh
 - ship: concluido em 2026-11-02 · ci verde · licoes 1 · skips: nenhum"""
 
 
+NOTA_ANTIGA = """---
+id: OLD-003
+status: concluida
+tipo: feature
+concluida_em: 2026-11-05
+---
+
+# OLD-003 - nota antiga
+
+## Objetivo
+""" + TEXTO_SECRETO + """
+
+## Revisao
+Resultado da revisao: corrigir agora 0 · opcionais 1 · descartados 0 · modo unica
+
+## Decisoes tomadas
+Resultado do exec: precisa de decisao 1 · so registro 2 · decisoes do coder 0
+"""
+
+
 def nota(id_, tipo="feature", status="ativa", estagio="plan", extra="", marca=" ",
          contrato="Regra fixa.", registro="", corpo_extra=""):
     return NOTA_TPL.format(
@@ -79,7 +99,7 @@ class MiniVault:
         self.tasks = os.path.join(self.dir, "Tarefas")
         os.makedirs(os.path.join(self.tasks, "Pendentes"))
         os.makedirs(os.path.join(self.tasks, "Concluidas"))
-        self.git("init", "-q")
+        self.git("init", "-q", "-b", "main")
         self.git("config", "user.email", "teste@example.com")
         self.git("config", "user.name", "Teste")
         self.git("config", "commit.gpgsign", "false")
@@ -114,9 +134,10 @@ def montar_vault():
       concluida 18:00 no dia 2026-11-02.
     - NOV-002 (fluxo novo): plan, design, build sem alterar Contrato (so marca checkbox), parada em bloqueada.
     - OLD-001 (fluxo antigo): nova 2026-10-01 10:00 -> revisada x2 -> concluida 2026-10-02 10:00 (24 h).
-    - FIX-001 (tipo fix): criada em 2026-11-05 e cita [[Task - Antiga]] (OLD-001, concluida 34 dias antes,
-      fora da janela 30) e NOV-001 (concluida 3 dias antes, dentro da janela).
-    - FIX-002 (tipo fix): criada em 2026-11-06 e cita so OLD-001 (fora da janela).
+    - FIX-001..FIX-004 (tipo fix, concluidas em nov): origem NOV-001, `anterior ao fluxo`, vazia e `externa`.
+    - OLD-003 (formato antigo do confianca.py: sem `estagio`): nova task 04/11 09:00 -> PR aberto 12:00 (3 h),
+      corrigir agora 0, precisa de decisao 1 + so registro 2.
+    - EPI-001 (epico concluido): fora da conta do confianca.py.
     """
     v = MiniVault()
     # OLD-001 - fluxo antigo
@@ -165,13 +186,26 @@ def montar_vault():
     v.escrever(p, nota("NOV-002", estagio="build", marca="x", registro="\n".join(reg1[:3])))
     v.commit("NOV-002: build", "2026-11-03T12:00:00-03:00")
 
-    # FIX-001 e FIX-002 - defeito escapado
-    v.escrever("Pendentes/Task - Corrige.md", nota(
-        "FIX-001", tipo="fix", corpo_extra="Veio de [[Task - Antiga]] e de NOV-001."))
-    v.commit("FIX-001: nova task (teste)", "2026-11-05T10:00:00-03:00")
-    v.escrever("Pendentes/Task - Corrige dois.md", nota(
-        "FIX-002", tipo="fix", corpo_extra="Veio de [[Task - Antiga|alias]]."))
-    v.commit("FIX-002: plan", "2026-11-06T10:00:00-03:00")
+    # FIX-001..FIX-004 - escapes pelo campo origem (o corpo cita outra task, mas a citacao nao conta)
+    origens = {"FIX-001": "origem: NOV-001\n", "FIX-002": "origem: anterior ao fluxo\n",
+               "FIX-003": "origem:\n", "FIX-004": "origem: externa\n"}
+    for dia, (fid, origem) in enumerate(sorted(origens.items()), start=12):
+        v.escrever("Concluidas/Task - Corrige %s.md" % fid, nota(
+            fid, tipo="fix", status="concluida", corpo_extra="Veio de [[Task - Antiga]] e de OLD-001.",
+            extra=origem + "concluida_em: 2026-11-%d\n" % dia))
+        v.commit("%s: plan" % fid, "2026-11-%dT10:00:00-03:00" % dia)
+
+    # OLD-003 - formato antigo do confianca.py (sem a chave estagio)
+    v.escrever("Concluidas/Task - Antiga tres.md", NOTA_ANTIGA)
+    v.commit("OLD-003: nova task (teste)", "2026-11-04T09:00:00-03:00")
+    v.commit("OLD-003: implementada", "2026-11-04T10:00:00-03:00")
+    v.commit("OLD-003: PR aberto", "2026-11-04T12:00:00-03:00")
+    v.commit("OLD-003: publicada", "2026-11-04T15:00:00-03:00")
+
+    # EPI-001 - epico concluido: conteiner, fora da conta
+    v.escrever("Concluidas/Task - Epico.md", nota(
+        "EPI-001", status="concluida", extra="concluida_em: 2026-11-20\n").replace("tamanho: task", "tamanho: epico"))
+    v.commit("EPI-001: plan", "2026-11-20T10:00:00-03:00")
 
     # NOV-003 - fluxo novo sem commit de plan, build e verify (so design, ship e concluida),
     # com rajada de commits na sincronizacao
@@ -322,13 +356,11 @@ class TestMiniVault(unittest.TestCase):
         t = metricas.tempos_estagio(self.vault.por_id["NOV-001"])
         # plan nao tem estagio anterior: fica fora
         self.assertEqual(t, {"design": 2.0, "build": 4.0, "verify": 1.0, "ship": 1.0, "concluida": 1.0})
-        self.assertEqual(metricas.intervalo_registrado(self.vault.por_id["NOV-001"]), 9.0)
 
     def test_tempo_por_estagio_so_entre_commits_consecutivos(self):
         n = self.vault.por_id["NOV-003"]
         # sem build e verify: ship nao e calculado (o anterior, verify, nao tem commit)
         self.assertEqual(metricas.tempos_estagio(n), {"concluida": 0.0})
-        self.assertEqual(metricas.intervalo_registrado(n), 5.0)
 
     def test_cobertura_dos_commits_de_estagio(self):
         self.assertTrue(metricas.cobertura_commits(self.vault.por_id["NOV-001"]))
@@ -346,18 +378,43 @@ class TestMiniVault(unittest.TestCase):
     def test_retrabalho(self):
         self.assertEqual(metricas.estagios_repetidos(self.vault.por_id["NOV-001"]), 1)
         self.assertEqual(metricas.estagios_repetidos(self.vault.por_id["OLD-001"]), 1)
-        self.assertEqual(metricas.intervalo_registrado(self.vault.por_id["OLD-001"]), 24.0)
 
     def test_parada_bloqueada(self):
         p = metricas.paradas(self.vault.por_id["NOV-002"])
         self.assertEqual(len(p), 1)
         self.assertEqual(p[0][1], "build")
 
-    def test_defeito_escapado(self):
-        achados = metricas.defeitos_escapados(self.vault, "2026-11", 30)
-        self.assertEqual(achados, [("FIX-001", "NOV-001")])
-        largos = sorted(metricas.defeitos_escapados(self.vault, "2026-11", 40))
-        self.assertEqual(largos, [("FIX-001", "NOV-001"), ("FIX-001", "OLD-001"), ("FIX-002", "OLD-001")])
+    def confianca_nov(self):
+        commits = metricas.conf_commits(self.vault.git, "main")
+        tarefas, ignoradas, fora = metricas.conf_ler_tarefas(os.path.join(self.v.tasks, "Concluidas"), commits)
+        self.assertEqual((ignoradas, fora), (0, 1))  # EPI-001 fora da conta
+        return metricas.conf_metricas([t for t in tarefas if t["concluida"].strftime("%Y-%m") == "2026-11"])
+
+    def test_escape_pelo_campo_origem(self):
+        esc = self.confianca_nov()["escapes"]
+        # so FIX-001 (origem = ID); a citacao de OLD-001 no corpo nao conta
+        self.assertEqual(esc["pares"], [["FIX-001", "NOV-001"]])
+        self.assertEqual(esc["valor"], 1)
+        self.assertEqual(esc["sem_dado"]["sem_origem"], ["FIX-003"])
+        self.assertEqual(esc["sem_dado"]["anterior_ao_fluxo"], ["FIX-002"])
+        self.assertEqual(esc["sem_dado"]["externa"], ["FIX-004"])
+        self.assertEqual(esc["fixes_no_recorte"], 4)
+
+    def test_horas_do_inicio_ao_pr(self):
+        h = self.confianca_nov()["horas_do_inicio_ao_pr"]
+        # NOV-001: 1o plan 09:00 -> 1o ship 17:00 = 8 h; OLD-003: nova task 09:00 -> 1o PR aberto 12:00 = 3 h
+        self.assertEqual(h["detalhe"], {"NOV-001": 8.0, "OLD-003": 3.0})
+        self.assertEqual(h["valor"]["mediana"], 5.5)
+
+    def test_revisao_sem_bloqueante_e_divergencias(self):
+        c = self.confianca_nov()
+        # NOV-001 tem `candidatos` na linha verify: a regex do confianca.py nao casa, fica sem dado
+        self.assertEqual(c["revisao_sem_bloqueante"]["ids"], ["OLD-003"])
+        self.assertEqual(c["revisao_sem_bloqueante"]["contagem"], 1)
+        self.assertEqual(c["divergencias_por_task"]["detalhe"], {"NOV-001": 3, "OLD-003": 3})
+        self.assertEqual(c["divergencias_por_task"]["valor"], 3.0)
+        self.assertEqual(c["concluidas"]["n"], 6)
+        self.assertEqual(c["sem_dado"], {"revisao": 5, "exec": 4, "horas_ate_o_pr": 4, "escapes": 1})
 
     def test_execucao_completa_so_le_o_vault_e_nao_vaza_texto(self):
         antes = self.v.git("status", "--porcelain") + self.v.git("rev-parse", "HEAD")
@@ -365,8 +422,7 @@ class TestMiniVault(unittest.TestCase):
         try:
             cfg = os.path.join(saida, "config.json")
             with open(cfg, "w", encoding="utf-8") as f:
-                json.dump({"vault": self.v.dir, "pasta_tasks": "Tarefas", "repositorios": [],
-                           "janela_defeito_dias": 30}, f)
+                json.dump({"vault": self.v.dir, "pasta_tasks": "Tarefas", "repositorios": []}, f)
             rc = metricas.main(["--config", cfg, "--mes", "2026-11", "--meses-anteriores", "1",
                                 "--saida", saida, "--sem-gh"])
             self.assertEqual(rc, 0)
@@ -384,15 +440,14 @@ class TestMiniVault(unittest.TestCase):
             ga = nov["fluxo_novo"]["grupos"]["A"]
             self.assertEqual(ga["contrato_ou_dod_alterado_apos_design"]["ids_sim"], ["NOV-001"])
             self.assertIsNone(ga["contrato_ou_dod_alterado_apos_design"]["valor"])  # N < 10
-            self.assertNotIn("defeito_escapado", ga)
-            esc = nov["fluxo_novo"]["experimental"]["defeito_escapado"]
-            self.assertEqual(esc["ids"], ["FIX-001"])
-            self.assertTrue(esc["aproximado"])
-            # fora do resumo e da tabela; so na secao Experimental do Markdown
-            antes_exp, depois_exp = txt_md.split("## Experimental")
-            self.assertNotIn("efeito escapado", antes_exp)
-            self.assertIn("Defeito escapado", depois_exp)
-            self.assertIn("nao e tempo de trabalho", txt_md.split("## Fluxo novo")[0])
+            self.assertNotIn("Experimental", txt_md)
+            self.assertNotIn("experimental", nov["fluxo_novo"])
+            # escapes e horas no resumo, marcados com a mesma definicao do confianca.py
+            resumo = txt_md.split("## Resumo")[1].split("##")[0]
+            self.assertIn("Escapes (mesma definicao do confianca.py): 1", resumo)
+            self.assertIn("Horas do inicio ao PR (mesma definicao do confianca.py)", resumo)
+            self.assertEqual(nov["fluxo_novo"]["grupos"]["C"]["problemas_depois_do_verify"]["detalhe"],
+                             {"NOV-001": ["escape"]})
             gb = nov["fluxo_novo"]["grupos"]["B"]
             self.assertEqual(gb["cobertura_commits_estagio"]["ids_sim"], ["NOV-001", "NOV-002"])
             self.assertNotIn("plan", gb["tempo_por_estagio_horas"])
