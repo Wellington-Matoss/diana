@@ -65,7 +65,10 @@ flowchart LR
     end
     D -->|aprovação| B
     V -->|bloqueante: correção<br/>por subagente| V
-    A -.->|bloqueada: o quê| P
+    SH -->|CI vermelho: correção<br/>por subagente| SH
+    A -.->|bloqueada| HU([Humano])
+    HU -.->|o quê| P
+    HU -.->|demais casos:<br/>mesmo estágio| A
     SH --> R{{Revisão e merge<br/>pelo humano}}
     R --> C[Close<br/>documentação]
 ```
@@ -75,7 +78,7 @@ flowchart LR
 | **Pergunta**       | O que construir?        | Como construir? | Construir       | Está certo?           | Entregar  | Registrar        |
 | **Humano**         | entrevista + teach-back | aprovação única | —               | —                     | —         | —                |
 | **Saída**          | spec                    | design aprovado | código + testes | achados classificados | PR aberto | docs atualizadas |
-| **Pode reprovar?** | —                       | —               | —               | **sim** (único)       | —         | —                |
+| **Portão antes do PR?** | —                  | —               | confere o próprio trabalho | **sim** (único) | corrige o CI | —        |
 
 ---
 
@@ -164,7 +167,7 @@ stateDiagram-v2
     em_revisao --> pausada: PR fechado sem merge
 ```
 
-O campo `estagio` (`plan` → `design` → `build` → `verify` → `ship`) diz até onde a task chegou. Uma parada não muda o `estagio`: muda só o `status` (ver `task-comum/regras.md`).
+O campo `estagio` (`plan` → `design` → `build` → `verify` → `ship`) diz o último estágio concluído. Uma parada não muda o `estagio`: muda só o `status` (ver `task-comum/regras.md`).
 
 ---
 
@@ -195,9 +198,7 @@ A unidade que passa por Design → Build → Verify → Ship é sempre uma nota 
 
 ## Autonomia: quando o agente para
 
-Do Build ao Ship, o agente **não pergunta**: decide, registra o motivo e segue. Ele só para, marca a task como `bloqueada` e termina com a linha `RESULTADO` quando o problema é de **o quê** (Contrato, escopo, produto), quando o passo não tem volta, quando há dúvida de segurança ou permissão, ou quando as tentativas de correção se esgotam. Problema de **como** não para o fluxo: um subagente novo corrige ali mesmo (correção por subagente).
-
-A lista completa dos casos, os casos próprios do Ship, os limites de tentativas por estágio, o formato da saída e a reentrada ficam num lugar só: [`task-comum/regras.md`](task-comum/regras.md).
+Do Build ao Close, o agente **não pergunta**: decide, registra o motivo e segue; problema de *como* se corrige ali mesmo, e ele só para nos casos de [`task-comum/regras.md`](task-comum/regras.md), que também guarda os limites de tentativas, o formato da saída e a reentrada.
 
 O que precisa do olho humano, mas não justifica parar, vai para a seção **Atenção** do PR.
 
@@ -209,7 +210,8 @@ O método não depende de um orquestrador específico. Serve qualquer um que cum
 
 - **Workspace e branch.** O orquestrador (ferramenta) cria o workspace da task depois da aprovação do Design. O Build (método) cria a branch nesse workspace, ou usa a branch da task se o workspace já estiver nela, e a mantém até o Ship. Verify e Ship conferem que estão na branch registrada na Execução.
 - **Entrada.** O humano roda Plan e Design com o orquestrador. Depois, o orquestrador chama um worker por estágio (Build, Verify, Ship), cada um numa sessão nova, e passa só o caminho da nota. O worker lê a nota, o contexto do projeto e os commits da branch. Só a nota e os commits passam de um estágio para o outro.
-- **Saída.** Todo estágio autônomo termina com a linha `RESULTADO`, inclusive numa parada. O orquestrador decide pela linha e pelo estado da nota (`status` e `estagio`): `concluido` chama o próximo estágio; `bloqueada` chama o humano. Linha ausente ou que contradiz a nota conta como `bloqueada`.
+- **Saída.** Todo estágio autônomo (Build, Verify, Ship e Close) termina com a linha `RESULTADO`, inclusive numa parada. O orquestrador decide pela linha e pelo estado da nota (`status` e `estagio`): `concluido` chama o próximo estágio; `bloqueada` chama o humano.
+- **Linha ausente ou contraditória.** Se a linha falta, ou contradiz a nota (por exemplo, `concluido` com `status: bloqueada`), o orquestrador trata como `bloqueada` e chama o humano. Não há número de caso: a regra é do orquestrador, não do estágio.
 - **Close.** Depois do merge do PR pelo humano, o orquestrador chama `/task-close <nota>`, ou uma rotina agendada roda `/task-close` sem argumento. No repositório sem PR, o orquestrador chama o Close logo depois do Ship.
 - **Reentrada.** Depois de `bloqueada`, quem resolve e qual estágio roda de novo depende do caso: ver [`task-comum/regras.md`](task-comum/regras.md).
 
@@ -280,7 +282,7 @@ claude -p "/task-ship <nota>"       # abre o PR
 /task-close                         # fecha as tasks com PR mergeado
 ```
 
-A última linha de cada estágio autônomo segue um formato fixo (`RESULTADO: <estagio> concluido|bloqueada - ...`), definido em `task-comum/regras.md`. A fonte da verdade continua sendo a nota (`status` e `estagio` no frontmatter); a linha só evita que o orquestrador interprete texto livre. Como o orquestrador usa a linha: ver [Contrato do orquestrador](#contrato-do-orquestrador). Em `claude -p` não há como aprovar permissões durante a execução: libere antes os comandos de git, `gh`, teste, lint e build do projeto.
+A última linha de cada estágio autônomo segue um formato fixo (`RESULTADO: <estagio> concluido|bloqueada - ...`), definido em `task-comum/regras.md`. A fonte da verdade continua sendo a nota (`status` e `estagio` no frontmatter); a linha só evita que o orquestrador interprete texto livre. Como o orquestrador usa a linha: ver [Contrato do orquestrador](#contrato-do-orquestrador). Em `claude -p` não há como aprovar permissões durante a execução: libere antes os comandos de git, `gh`, teste, lint e build do projeto. Libere também o que os estágios fazem fora disso: instalar dependências na cópia isolada dos revisores, apagar pastas temporárias e sincronizar as notas. Uma permissão negada durante a execução para o estágio na hora (ver `task-comum/regras.md`).
 
 ---
 

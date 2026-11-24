@@ -1,6 +1,6 @@
 ---
 name: task-verify
-description: Estagio 4 (Verify) do fluxo Plan > Design > Build > Verify > Ship. Portao unico que pode reprovar o trabalho, de forma autonoma - roda testes e lint, comprova cada criterio no app real, revisa em paralelo (spec, padroes, ataque ao diff, raio de impacto), separa quem acha de quem julga, classifica os achados, corrige bloqueantes por subagente novo e encerra com uma linha de resultado; o orquestrador chama o /task-ship.
+description: Estagio 4 (Verify) do fluxo Plan > Design > Build > Verify > Ship. Unico portao antes do PR, de forma autonoma - roda testes e lint, comprova cada criterio no app real, revisa em paralelo (spec, padroes, ataque ao diff, raio de impacto), separa quem acha de quem julga, classifica os achados, corrige bloqueantes por subagente novo e encerra com uma linha de resultado; o orquestrador chama o /task-ship.
 argument-hint: <caminho da nota da task no vault> (vazio = resolver a task ativa)
 disable-model-invocation: true
 ---
