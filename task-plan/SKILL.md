@@ -70,7 +70,7 @@ Use subagentes leves, somente leitura. Nao gaste modelo forte em leitura.
 - **Por que e assim:** um subagente le o historico (commits e PRs que criaram e alteraram a area). Ele cita o que os autores escreveram, marca o que e inferencia e diz o que o historico nao responde. Pule (`skip: <motivo>`) em area nova ou trivial.
 - **Fatos externos** (API de terceiros, biblioteca, norma): pesquise em fonte primaria e salve as conclusoes com citacao na nota da task.
 - **Glossario:** leia o glossario do projeto e use os termos dele.
-- **Prova com dado real (condicional):** se a task cria ou muda regra, metrica, filtro ou formato sobre dado que ja existe, teste a premissa contra o dado antes da entrevista. Um subagente de contexto limpo roda a consulta **so em leitura** e devolve **so numero agregado** (contagem, minimo, mediana, maximo; com menos de 5 casos, so a contagem). Nunca registro individual nem dado pessoal. Nunca producao, a menos que o contexto do projeto defina uma fonte autorizada. Prova que contradiz a premissa muda a proposta antes de chegar ao usuario. Sem regra sobre dado existente: `nao se aplica - <motivo>`. Sem fonte so leitura disponivel: `prova indisponivel - <motivo>`.
+- **Prova com dado real (condicional):** se a task cria ou muda regra, metrica, filtro ou formato sobre dado que ja existe, teste a premissa contra o dado antes da entrevista. Um subagente de contexto limpo roda a consulta **so em leitura** e devolve **so numero agregado** (contagem, minimo, mediana, maximo; com menos de 5 casos, so a contagem). A consulta tambem conta, so no agregado, os registros fora do padrao que a regra vai ler (ver a categoria limite do passo 5). Nunca registro individual nem dado pessoal. Nunca producao, a menos que o contexto do projeto defina uma fonte autorizada. Prova que contradiz a premissa muda a proposta antes de chegar ao usuario. Sem regra sobre dado existente: `nao se aplica - <motivo>`. Sem fonte so leitura disponivel: `prova indisponivel - <motivo>`.
 - Execute os passos de investigacao do arquivo de tipo.
 
 ## 4. Explicar (como e hoje)
@@ -103,7 +103,7 @@ Mapeie as decisoes como uma arvore: cada decisao abre as decisoes que dependem d
     - **feliz:** o caminho normal;
     - **erro esperado:** entrada invalida, recusa de negocio, falta de permissao;
     - **repeticao:** clique duplo, pedido duplicado, duas requisicoes ao mesmo tempo;
-    - **limite:** zero, negativo, vazio, vencido, maximo;
+    - **limite:** zero, negativo, vazio, vencido, maximo; dado ja gravado fora do padrao (campo obrigatorio ausente, lista vazia, referencia para registro que nao existe mais), quando a regra le dado gravado;
     - **acesso indevido:** usuario A lendo ou alterando dado de B.
 
     Categoria que nao se aplica: `nao se aplica - <motivo>`. Cada frase vira um teste com o mesmo titulo.

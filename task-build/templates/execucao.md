@@ -16,4 +16,4 @@
 **Limpeza:** <o que foi removido; edicoes revertidas>
 
 ### Candidatos a Atencao (o Verify filtra o que vai para o PR)
-- <frase sem teste automatizado (teste impraticavel); falha esperada registrada; decisao de dominio no lint; comentario "nao remover"; achado sem seam de teste>
+- <frase sem teste automatizado (teste impraticavel); falha esperada registrada; decisao de dominio no lint; comentario "nao remover"; achado sem seam de teste; dado gravado fora do padrao sem frase na Definicao de pronto>

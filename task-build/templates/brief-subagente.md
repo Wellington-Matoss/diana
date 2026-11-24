@@ -27,6 +27,7 @@ Voce implementa a task <ID> - <nome curto>.
 - Teste planejado impraticavel: use a verificacao executavel mais proxima, registre e marque ATENCAO.
 - Bug real fora do escopo: falha esperada, conforme `referencias/tdd.md`. Registre no relatorio.
 - Teste do plano parece errado: NAO altere. Pare a etapa e reporte.
+- A etapa le dado ja gravado e a Definicao de pronto nao tem frase para dado fora do padrao: NAO decida o comportamento. Registre no relatorio como ATENCAO: "dado gravado fora do padrao sem frase na Definicao de pronto".
 
 ## Pare e reporte se
 - cumprir uma frase exige mudar um item do Contrato, o escopo ou o produto;

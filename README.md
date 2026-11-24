@@ -224,6 +224,7 @@ Checklist do contexto que as skills leem (memória do agente ou `CLAUDE.md`):
 - [ ] **Comandos** por subprojeto: teste, lint, build, type check
 - [ ] **Testes:** guia de testes, banco de teste, limitações conhecidas (ex.: sem teste de componente)
 - [ ] **Verificação no app:** skill `verify` do projeto, ambiente isolado, conta de teste
+- [ ] **Cópia isolada para revisores:** como e onde o Verify cria uma cópia do código para executar ataques sem escrever fora do workspace da task
 - [ ] **Lentes do projeto** para o revisor de Padrões (ex.: "ação de negócio gera log de auditoria")
 - [ ] **Changelog para o usuário final:** arquivo, formato e regras de curadoria (se houver)
 - [ ] **CI:** existe? quais checks?
