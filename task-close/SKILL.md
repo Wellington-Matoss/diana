@@ -51,6 +51,7 @@ Para cada task, consulte cada PR da nota (`gh pr view <url> --json state,mergedA
 ## 5. Fechar a nota
 
 - Frontmatter: `status: concluida`, `concluida_em: <data>`, `atualizado`.
+- Escreva a linha `close` no "Registro de etapas", no formato do template da spec (`merge em <AAAA-MM-DD|sem pr>`, debitos criados e removidos no passo 4).
 - Secao `## Resultado`: o que ficou pronto, PRs e data do merge, pendencias residuais e para onde foram. **Fato que nao envelhece:** "PR #12 mergeado em develop em 22/11/2026". Nada de "aguardar", "pendente de merge" ou proximo passo numa task concluida; sem proximo passo, escreva "nenhum - task concluida".
 - Mova a nota para a pasta de tasks concluidas do projeto (se o projeto separa por pasta).
 

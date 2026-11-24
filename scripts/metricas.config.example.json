@@ -1,0 +1,6 @@
+{
+  "vault": "C:/caminho/para/o/vault",
+  "pasta_tasks": "06 - Tarefas",
+  "repositorios": ["dono/repo-backend", "dono/repo-frontend"],
+  "janela_defeito_dias": 30
+}
