@@ -98,7 +98,8 @@ Nao aceite o relatorio sem conferir:
    - [ ] os testes planejados para a etapa existem e testam o criterio (nao detalhe interno);
    - [ ] o relatorio mostra o vermelho **pelo motivo certo** antes do verde;
    - [ ] arquivos alterados estao dentro do que a etapa previa (ou o desvio esta registrado);
-   - [ ] nenhum item do Contrato mudou (rota, formato, status, campo gravado, permissao, log).
+   - [ ] nenhum item do Contrato mudou (rota, formato, status, campo gravado, permissao, log);
+   - [ ] se a etapa le dado ja gravado, a Definicao de pronto tem frase para dado fora do padrao (categoria limite do Plan). Senao, o codigo nao decide o comportamento e o caso vai aos candidatos a Atencao: "dado gravado fora do padrao sem frase na Definicao de pronto".
 2. **Testes do plano intactos:** compare os testes com o plano. Assercao enfraquecida, esperado trocado, teste pulado (`skip`, `only`, `todo`) ou teste do plano removido = reprovado. No fix, nenhum teste do plano termina como falha esperada: a marca do commit de reproducao sai no commit da correcao.
 3. **Rode voce mesmo:** suite completa, lint e build. Compare com a linha de base. Apontamento novo de lint nos arquivos tocados = reprovado. Apontamento que pode ser decisao de dominio: escolha a opcao conservadora, registre e marque "Atencao".
 4. **Reprovado:** dispare um **subagente novo** com o brief original + a lista objetiva do que falhou (nao continue o subagente anterior). Maximo de 2 rodadas; na segunda, aplique a regra de modelo. Persistiu: caso 4 de "Quando parar".
