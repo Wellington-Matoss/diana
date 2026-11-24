@@ -9,7 +9,7 @@ Percorra de cima para baixo. Se o topo falha, detalhe de baixo e desperdicio.
 | Nivel | Lentes |
 |---|---|
 | **Alto** | funcionalidade, design (camada certa, sem caminho paralelo, abstracao na medida), correcao (nulo, limite, await, borda, erro de rede/banco), contrato entre arquivos e entre back e front, cobertura de teste, lentes do projeto |
-| **Medio** | legibilidade (nome que engana, funcao longa ou aninhada demais, "esperteza"), documentacao (codigo que parece bug mas e intencional, sem o porque; contrato novo sem documentacao) |
+| **Medio** | legibilidade (nome que engana, funcao longa ou aninhada demais, "esperteza"), documentacao (codigo que parece bug mas e intencional: peca primeiro a reescrita do codigo, com nome, extracao, tipo ou teste; comentario so se o caso esta na lista fechada de `task-build/referencias/limpeza.md`; contrato novo de API publica sem documentacao) |
 
 ## Revisor de Spec
 
