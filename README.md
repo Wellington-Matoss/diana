@@ -15,6 +15,7 @@ O humano trabalha onde o julgamento dele é insubstituível: **decidir o que con
 - [A nota da task](#a-nota-da-task)
 - [Tipos e tamanhos](#tipos-e-tamanhos)
 - [Autonomia: quando o agente para](#autonomia-quando-o-agente-para)
+- [Contrato do orquestrador](#contrato-do-orquestrador)
 - [Três camadas: método, ferramenta e contexto](#três-camadas-método-ferramenta-e-contexto)
 - [O que cada projeto precisa fornecer](#o-que-cada-projeto-precisa-fornecer)
 - [Instalação](#instalação)
@@ -112,12 +113,14 @@ Depois do merge, atualiza a documentação de arquitetura para descrever **como 
 | ------------- | ------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------- |
 | `task-plan`   | Plan    | `/task-plan <demanda>`   | `tipos/` (fix, feature, refatoração, investigação), `tamanhos/` (épico, mapa), `templates/` (spec, questionário)      |
 | `task-design` | Design  | `/task-design <nota>`    | `referencias/` (vocabulário de forma, protótipo de UI, protótipo de lógica, design duas vezes), `templates/design.md` |
-| `task-build`  | Build   | `/task-build <nota>`     | `referencias/` (TDD, limpeza), `templates/` (brief do subagente, execução)                                            |
+| `task-build`  | Build   | orquestrador, após o Design aprovado | `referencias/` (TDD, limpeza), `templates/` (brief do subagente, execução)                                            |
 | `task-verify` | Verify  | orquestrador, após o Build  | `referencias/` (app real, revisores), `templates/verificacao.md`                                                      |
 | `task-ship`   | Ship    | orquestrador, após o Verify | `referencias/commits.md`, `templates/` (PR, lições)                                                                   |
-| `task-close`  | Close   | `/task-close [nota]`     | —                                                                                                                     |
+| `task-close`  | Close   | orquestrador após o merge, ou rotina agendada (`/task-close [nota]`) | —                                                                                                                     |
 
-Todas usam `disable-model-invocation: true`: só rodam quando chamadas de fora (pelo humano ou por um orquestrador), nunca por iniciativa do modelo. Por isso **uma skill não chama a seguinte**: o Claude Code recusa a chamada de uma skill com essa opção pela ferramenta Skill (testado em 23/11/2026, Claude Code 2.1.330). Cada estágio autônomo termina com uma linha de resultado para o orquestrador (ver [Uso](#uso)).
+A pasta `task-comum/` não é skill: guarda as regras comuns do Build, do Verify e do Ship.
+
+Todas usam `disable-model-invocation: true`: só rodam quando chamadas de fora (pelo humano ou por um orquestrador), nunca por iniciativa do modelo. Por isso **uma skill não chama a seguinte**: o Claude Code recusa a chamada de uma skill com essa opção pela ferramenta Skill (testado em 23/11/2026, Claude Code 2.1.330). Cada estágio autônomo termina com uma linha de resultado para o orquestrador (ver [Contrato do orquestrador](#contrato-do-orquestrador)).
 
 ### Padrão de commit e PR
 
@@ -155,13 +158,13 @@ stateDiagram-v2
     ativa --> aguardando: questionário enviado
     aguardando --> ativa: resposta recebida
     ativa --> bloqueada: agente parou
-    bloqueada --> ativa: humano resolveu
+    bloqueada --> ativa: humano resolveu ou Plan retomado
     ativa --> em_revisao: PR aberto
     em_revisao --> concluida: merge + Close
     em_revisao --> pausada: PR fechado sem merge
 ```
 
-O campo `estagio` (`plan` → `design` → `build` → `verify` → `ship`) diz até onde a task chegou.
+O campo `estagio` (`plan` → `design` → `build` → `verify` → `ship`) diz até onde a task chegou. Numa parada, o que muda em `status` e `estagio` está em `task-comum/regras.md`.
 
 ---
 
@@ -197,6 +200,18 @@ Do Build ao Ship, o agente **não pergunta**: decide, registra o motivo e segue.
 A lista completa dos casos, os casos próprios do Ship, os limites de tentativas por estágio, o formato da saída e a reentrada ficam num lugar só: [`task-comum/regras.md`](task-comum/regras.md).
 
 O que precisa do olho humano, mas não justifica parar, vai para a seção **Atenção** do PR.
+
+---
+
+## Contrato do orquestrador
+
+O método não depende de um orquestrador específico. Serve qualquer um que cumpra este contrato.
+
+- **Workspace e branch.** O orquestrador (ferramenta) cria o workspace da task depois da aprovação do Design. O Build (método) cria a branch nesse workspace, ou usa a branch da task se o workspace já estiver nela, e a mantém até o Ship. Verify e Ship conferem que estão na branch registrada na Execução.
+- **Entrada.** O humano roda Plan e Design com o orquestrador. Depois, o orquestrador chama um worker por estágio (Build, Verify, Ship), cada um numa sessão nova, e passa só o caminho da nota. O worker lê a nota, o contexto do projeto e os commits da branch. Só a nota e os commits passam de um estágio para o outro.
+- **Saída.** Todo estágio autônomo termina com a linha `RESULTADO`, inclusive numa parada. O orquestrador decide pela linha e pelo estado da nota (`status` e `estagio`): `concluido` chama o próximo estágio; `bloqueada` chama o humano. Linha ausente ou que contradiz a nota conta como `bloqueada`.
+- **Close.** Depois do merge do PR pelo humano, o orquestrador chama `/task-close <nota>`, ou uma rotina agendada roda `/task-close` sem argumento. No repositório sem PR, o orquestrador chama o Close logo depois do Ship.
+- **Reentrada.** Depois de `bloqueada`, quem resolve e qual estágio roda de novo depende do caso: ver [`task-comum/regras.md`](task-comum/regras.md).
 
 ---
 
@@ -265,14 +280,7 @@ claude -p "/task-ship <nota>"       # abre o PR
 /task-close                         # fecha as tasks com PR mergeado
 ```
 
-A última linha de cada estágio autônomo segue um formato fixo, para o orquestrador decidir se segue:
-
-```text
-RESULTADO: <build|verify|ship> concluido - <resumo em uma linha>
-RESULTADO: <build|verify|ship> bloqueada - <caso de parada e motivo>
-```
-
-A fonte da verdade continua sendo a nota (`status` e `estagio` no frontmatter); a linha só evita que o orquestrador interprete texto livre. Em `claude -p` não há como aprovar permissões durante a execução: libere antes os comandos de git, `gh`, teste, lint e build do projeto.
+A última linha de cada estágio autônomo segue um formato fixo (`RESULTADO: <estagio> concluido|bloqueada - ...`), definido em `task-comum/regras.md`. A fonte da verdade continua sendo a nota (`status` e `estagio` no frontmatter); a linha só evita que o orquestrador interprete texto livre. Como o orquestrador usa a linha: ver [Contrato do orquestrador](#contrato-do-orquestrador). Em `claude -p` não há como aprovar permissões durante a execução: libere antes os comandos de git, `gh`, teste, lint e build do projeto.
 
 ---
 
