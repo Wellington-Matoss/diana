@@ -56,7 +56,8 @@ Se a task e de um repositorio que publica direto (contexto do projeto), o Ship e
 1. Branch atual nao e protegida.
 2. `git status` limpo: nada fora dos commits da task.
 3. O diff (`git diff <base>...HEAD`) so tem arquivos da task. Arquivo nao relacionado: remova do diff com um commit `chore: remove alteracao fora do escopo` e registre.
-4. Procure segredos no diff: `.env`, chave, token, certificado, senha, dado pessoal. Encontrou: caso 1.
+4. Todo commit da task tem o rodape `Task: <ID>` (`referencias/commits.md`): e o caminho do codigo ate o porque, que nao fica no comentario. Commit local sem rodape: corrija a mensagem antes do push. Commit ja enviado sem rodape: nao reescreva o historico; registre o hash na nota.
+5. Procure segredos no diff: `.env`, chave, token, certificado, senha, dado pessoal. Encontrou: caso 1.
 
 ## 2. Integrar a base
 

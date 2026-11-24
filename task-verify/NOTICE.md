@@ -8,7 +8,7 @@ Esta skill adapta ideias e trechos (traduzidos e resumidos) de:
 
 - **pstack** - MIT License, Copyright (c) 2026 Lauren Tan; port para Claude Code: Copyright (c) 2026 Michael Denyer.
   https://github.com/cursor/plugins/tree/main/pstack (port para Claude Code: https://github.com/michael-denyer/pstack-claude)
-  Base: `create-verification-skill` (Launch, Doctor, Drive, Evidence, Cleanup, mapa de funcionalidades), `interrogate` (so sobrevive achado provado por execucao), `blast-radius` (fato que torna a mudanca segura, escala de certeza), `benchmark-checklist` (perguntas de numeros), principio `prove-it-works`.
+  Base: `create-verification-skill` (Launch, Doctor, Drive, Evidence, Cleanup, mapa de funcionalidades), `interrogate` (so sobrevive achado provado por execucao), `blast-radius` (fato que torna a mudanca segura, escala de certeza), `benchmark-checklist` (perguntas de numeros), o agente `comment-sicko` (lente de documentacao: reescrita do codigo antes de comentario), principio `prove-it-works`.
 
 - **cursor-team-kit** - MIT License, Copyright (c) 2026 Cursor.
   https://github.com/cursor/plugins/tree/main/cursor-team-kit (plugin irmao do pstack, no mesmo repositorio)

@@ -95,6 +95,7 @@ Nao aceite o relatorio sem conferir:
 
 1. **Por etapa** (`git log` e `git show` de cada commit):
    - [ ] existe o commit da etapa;
+   - [ ] o commit tem o rodape `Task: <ID>`, como manda o `commits.md` do Ship. Esse rodape e o caminho do codigo ate o porque (blame -> commit -> ID -> nota), agora que o porque nao fica no comentario. Commit sem rodape: corrija antes do push (no Build os commits ainda sao locais);
    - [ ] os testes planejados para a etapa existem e testam o criterio (nao detalhe interno);
    - [ ] o relatorio mostra o vermelho **pelo motivo certo** antes do verde;
    - [ ] arquivos alterados estao dentro do que a etapa previa (ou o desvio esta registrado);
@@ -106,9 +107,14 @@ Nao aceite o relatorio sem conferir:
 
 ## 5. Limpar o diff
 
-Siga `referencias/limpeza.md` sobre o diff da task inteira. Depois rode de novo testes, lint e build. Reverta qualquer edicao de limpeza que quebrar algo. Commit local: `limpeza`.
+Siga `referencias/limpeza.md` sobre o diff da task inteira, em duas passagens:
 
-Limpeza nao e refatoracao: nao mude estrutura que o Design nao previu.
+1. **(a) Limpeza geral:** o lider ou um subagente aplica a secao "(a) Limpeza geral".
+2. **(b) Comentarios e supressoes:** dispare um **subagente de contexto limpo** com a secao "(b) Comentarios e supressoes" e o escopo do diff. Quem escreveu tende a defender o proprio comentario. Sem subagente: vale o paragrafo "Sem subagente" do passo 3, numa passagem separada que rele o diff do zero.
+3. **Conferir (lider):** leia o relatorio e o diff da passagem (b). Rejeite edicao que muda comportamento ou que sai do diff da task. Rode de novo testes, lint e build. Reverta qualquer edicao de limpeza que quebrar algo.
+4. **Commit local** no padrao do `commits.md` do Ship: `refactor(<escopo>): limpa o diff da task`, com o rodape `Task: <ID>`.
+
+Limpeza nao e refatoracao: nao mude estrutura que o Design nao previu. Unica excecao: a reescrita pequena, dentro do diff, que troca um comentario por codigo que deixa a regra obvia (ver `referencias/limpeza.md`).
 
 ## 6. Registrar e seguir
 

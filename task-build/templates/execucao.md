@@ -13,7 +13,12 @@
 - Lint: `<comando>` -> <resultado vs linha de base>
 - Build: `<comando>` -> <resultado>
 
-**Limpeza:** <o que foi removido; edicoes revertidas>
+**Limpeza:**
+- Geral: <o que foi removido; edicoes revertidas>
+- Comentarios removidos: <quantidade, por arquivo>
+- Reescritas feitas: <simbolo e regra que o codigo passou a deixar obvia>
+- Pendencias criadas: <reescrita que nao coube na task, candidato a debito>
+- Supressoes removidas: <regra de cada uma; mantidas e por que>
 
 ### Candidatos a Atencao (o Verify filtra o que vai para o PR)
-- <frase sem teste automatizado (teste impraticavel); falha esperada registrada; decisao de dominio no lint; comentario "nao remover"; achado sem seam de teste; dado gravado fora do padrao sem frase na Definicao de pronto>
+- <frase sem teste automatizado (teste impraticavel); falha esperada registrada; decisao de dominio no lint; restricao "nao remover" confirmada (proposta de teste, tipo ou checagem); supressao que protege a correcao, com correcao fora do escopo; achado sem seam de teste; dado gravado fora do padrao sem frase na Definicao de pronto>
