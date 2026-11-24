@@ -235,7 +235,7 @@ Checklist do contexto que as skills leem (memória do agente ou `CLAUDE.md`):
 
 ## Instalação
 
-As skills se referenciam entre si (por exemplo, o Build usa o padrão de commit do Ship), então **instale as seis juntas**.
+As skills se referenciam entre si (por exemplo, o Build usa o padrão de commit do Ship), então **instale as seis juntas, com a pasta `task-comum`**. Essa pasta não é skill (não tem `SKILL.md`): guarda as regras comuns do Build, do Verify e do Ship (`task-comum/regras.md`), que as skills citam por caminho relativo. O `task-*` dos comandos abaixo já a inclui.
 
 **Para todos os seus projetos** (pessoal):
 
