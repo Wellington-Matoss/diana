@@ -86,7 +86,7 @@ Sem changelog no projeto: `skip: projeto sem changelog`.
 
 1. **Titulo:** `tipo(escopo): assunto` (`referencias/commits.md`). No merge com squash, o titulo vira a mensagem do commit na base.
 2. **Corpo:** `templates/pr.md`, com o conteudo do Verify (resumo do diff, evidencia, Atencao, sugestoes) e do Build (desvios). Ate ~40 linhas. Secao vazia sai, exceto "Atencao", que mostra "Nada." quando vazia.
-3. Abra **pronto para revisao** (nao rascunho), para a base do projeto: `gh pr create --base <base> --head <branch> --title "<titulo>" --body-file <arquivo>`.
+3. Abra **pronto para revisao** (nao rascunho), para a base do projeto: `gh pr create --base <base> --head <branch> --title "<titulo>" --body-file <arquivo>`. Se a branch ja tem PR aberto (Ship retomado), nao abra outro: atualize o titulo e o corpo dele (`gh pr edit`).
 4. Dois repositorios: abra os dois PRs e coloque o link de um no outro.
 5. **Nao faca merge.**
 
