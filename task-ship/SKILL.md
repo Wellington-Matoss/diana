@@ -66,7 +66,8 @@ Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de 
 1. `git fetch` e confira se a branch esta atras da base.
 2. Atras: faca merge da base na branch (nao rebase: preserva os commits ja verificados).
 3. Conflito **mecanico** (lockfile, import, formatacao, arquivos independentes): resolva. Conflito na **logica** da task: caso 6.
-4. Houve merge da base: rode de novo testes, lint e build. Vermelho: volte ao Build com o erro (uma rodada); persistindo, caso 3.
+4. Houve merge da base: rode de novo testes, lint e build. Vermelho: "Correcao por subagente" de `../task-comum/regras.md`, com o erro. Limite: tabela do mesmo arquivo; persistindo, caso 4.
+5. **Ataque antes do push.** Toda correcao de codigo no Ship (aqui ou no passo 6) passa, antes do push, pelo Atacante do diff sobre o diff da correcao, com o brief de `../task-verify/referencias/revisores.md` e numa copia isolada (ver "Copia isolada" do `/task-verify` passo 3). Achado provado por execucao: nova correcao, que conta na tabela de limites.
 
 ## 3. Changelog do projeto (se houver)
 
@@ -96,8 +97,8 @@ Projeto sem CI: `skip: projeto sem CI`.
 
 1. Espere os checks terminarem (`gh pr checks <pr> --watch`).
 2. Verde: siga.
-3. Falha **causada pelo diff**: leia o primeiro erro acionavel no log, dispare um subagente do Build com o erro, commit, push, espere de novo. Maximo 3 rodadas; depois, caso 4.
-4. Falha **nao causada pelo diff** (instabilidade, infraestrutura, falha que ja existe na base): rode de novo uma vez. Persistindo: comente no PR com a evidencia e acrescente em "Atencao".
+3. Falha **causada pelo diff**: leia o primeiro erro acionavel no log e aplique "Correcao por subagente" de `../task-comum/regras.md`, com o erro. Ataque antes do push (passo 2), push, espere de novo. Limite: tabela do mesmo arquivo; depois, caso 4.
+4. Falha **nao causada pelo diff** (instabilidade, infraestrutura, falha que ja existe na base): rode de novo, no limite da tabela. Persistindo: comente no PR com a evidencia e acrescente em "Atencao".
 5. Nunca mude o esperado de um teste para o CI passar.
 
 ## 7. Atualizar a nota
@@ -113,7 +114,7 @@ Leia o "Registro de etapas", a Execucao e a Verificacao da nota. **Registre so s
 
 Conta como licao:
 
-- rodada de volta ao Build (por que o Build nao pegou antes?);
+- correcao por subagente no Verify ou no Ship (por que o Build nao pegou antes?);
 - bloqueio ou parada (o que faltou: contexto, permissao, ferramenta?);
 - comando, caminho ou convencao que o agente teve que descobrir e nao estava no contexto do projeto;
 - revisor que deixou passar algo que o CI ou outro revisor pegou;

@@ -1,6 +1,6 @@
 ---
 name: task-verify
-description: Estagio 4 (Verify) do fluxo Plan > Design > Build > Verify > Ship. Portao unico que pode reprovar o trabalho, de forma autonoma - roda testes e lint, comprova cada criterio no app real, revisa em paralelo (spec, padroes, ataque ao diff, raio de impacto), separa quem acha de quem julga, classifica os achados, devolve bloqueantes ao Build e encerra com uma linha de resultado; o orquestrador chama o /task-ship.
+description: Estagio 4 (Verify) do fluxo Plan > Design > Build > Verify > Ship. Portao unico que pode reprovar o trabalho, de forma autonoma - roda testes e lint, comprova cada criterio no app real, revisa em paralelo (spec, padroes, ataque ao diff, raio de impacto), separa quem acha de quem julga, classifica os achados, corrige bloqueantes por subagente novo e encerra com uma linha de resultado; o orquestrador chama o /task-ship.
 argument-hint: <caminho da nota da task no vault> (vazio = resolver a task ativa)
 disable-model-invocation: true
 ---
@@ -11,8 +11,8 @@ Voce e o **portao** entre o codigo e o PR. E o unico estagio que reprova. O flux
 
 ```
 Nota (build concluido) -> 1 Preparar -> 2 App real -> 3 Revisar (paralelo) -> 4 Julgar -> 5 Classificar -> 6 Registrar -> RESULTADO
-                          (testes,      (portao)    (spec, padroes,          (provar     (bloqueante volta
-                           lint)                     ataque, raio)            ou cair)    ao Build)
+                          (testes,      (portao)    (spec, padroes,          (provar     (bloqueante: correcao
+                           lint)                     ataque, raio)            ou cair)    por subagente)
 ```
 
 ## Principios
@@ -78,7 +78,7 @@ Dispare os revisores **ao mesmo tempo**, cada um em contexto limpo, com os brief
 3. **Conferir antes de atacar:** rode na copia, sem nenhuma mudanca, os testes e o lint. O resultado precisa reproduzir a linha de base: os mesmos testes passando e os mesmos apontamentos de lint do passo 1 no workspace da task (a linha de base do Build mais o que a task mudou). Se nao reproduzir, o problema e a copia (configuracao, dependencias, caminho), nao o codigo: aplique "confira o metodo de observacao" de `referencias/app-real.md`. Nenhum achado tirado da copia vale ate ela reproduzir a linha de base.
 4. **Remover e registrar:** remova toda copia ate o fim do Verify. Registre na nota o local, o resultado da conferencia e a remocao.
 
-**Sem subagente.** Siga "Sem subagente" de `../task-comum/regras.md`. No Verify, rode cada revisor deste passo e cada verificador do passo 4 numa passagem separada, em sequencia. Cada passagem rele do zero so o brief de `referencias/revisores.md`, o diff e a nota. O verificador nao reaproveita o raciocinio de quem achou o candidato. No modo completo, acrescente aos candidatos a Atencao: "revisao sem contexto separado". A volta ao Build do passo 5 segue "Sem subagente" do `/task-build` passo 3.
+**Sem subagente.** Siga "Sem subagente" de `../task-comum/regras.md`. No Verify, rode cada revisor deste passo e cada verificador do passo 4 numa passagem separada, em sequencia. Cada passagem rele do zero so o brief de `referencias/revisores.md`, o diff e a nota. O verificador nao reaproveita o raciocinio de quem achou o candidato. No modo completo, acrescente aos candidatos a Atencao: "revisao sem contexto separado".
 
 ## 4. Julgar
 
@@ -91,12 +91,12 @@ Dispare os revisores **ao mesmo tempo**, cada um em contexto limpo, com os brief
 
 | Categoria                   | O que entra                                                                                                                                                                                                                                                                    | Destino                                    |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
-| **Bloqueante**              | teste vermelho; lint novo; criterio que falhou no app; requisito da spec ausente, parcial ou errado (CONFIRMADO); **item do Contrato violado** (CONFIRMADO); frase sem teste e sem desvio registrado; bug provado por execucao; violacao CONFIRMADA de padrao documentado do repositorio | volta ao Build                             |
+| **Bloqueante**              | teste vermelho; lint novo; criterio que falhou no app; requisito da spec ausente, parcial ou errado (CONFIRMADO); **item do Contrato violado** (CONFIRMADO); frase sem teste e sem desvio registrado; bug provado por execucao; violacao CONFIRMADA de padrao documentado do repositorio | correcao por subagente                     |
 | **Atencao**                 | precisa de decisao do usuario ou ele precisa saber antes do merge: criterio `nao comprovado`; frase sem teste automatizado (desvio registrado); falha esperada nova; risco de seguranca ou dados PLAUSIVEL; decisao de dominio (ex.: lint que pode ser regra de negocio); escopo a mais no diff | PR (maximo 5; o excedente vai para a nota) |
 | **Nota**                    | cheiro de codigo, legibilidade, documentacao, achado `[Medio]` sem risco concreto, PLAUSIVEL de baixo risco, refutados com a prova                                                                                                                                             | so a nota                                  |
 | **Sugestao para o projeto** | melhoria **sistemica** com beneficio claro (ver criterios abaixo)                                                                                                                                                                                                              | PR (maximo 3) + nota                       |
 
-**Bloqueante:** dispare um subagente novo do Build (`/task-build` passo 3, brief original + lista objetiva dos bloqueantes). Depois, rode de novo os passos 1 e 2 e verifique de novo so os bloqueantes. Maximo 2 rodadas; depois, caso 4 de "Quando parar".
+**Bloqueante:** "Correcao por subagente" de `../task-comum/regras.md`, com a lista objetiva dos bloqueantes. Depois, rode de novo os passos 1 e 2 e verifique de novo so os bloqueantes. Limite: tabela do mesmo arquivo; depois, caso 4.
 
 **Sugestao para o projeto:** **"nenhuma" e o resultado esperado na maioria das tasks.** Nao procure sugestao e nao invente: ela so existe se apareceu durante a revisao. O maximo de 3 e um teto, nao uma meta. Na duvida, nao sugira. So entra se todas forem verdadeiras:
 

@@ -39,7 +39,7 @@ Um bom fluxo é:
 
 - **repetível:** o mesmo tipo de demanda passa pelos mesmos passos;
 - **verificável:** cada estágio tem um critério de saída;
-- **adaptável:** aceita voltar um estágio quando a realidade contradiz o plano;
+- **adaptável:** problema de *como* se corrige ali mesmo, por um subagente novo; problema de *o quê* volta ao Plan, com o humano;
 - **evolutivo:** o que deu errado numa entrega vira melhoria do próprio fluxo.
 
 Princípios que atravessam todos os estágios:
@@ -63,7 +63,8 @@ flowchart LR
         B[Build<br/>teste primeiro] --> V[Verify<br/>portão] --> SH[Ship<br/>PR]
     end
     D -->|aprovação| B
-    V -->|bloqueante| B
+    V -->|bloqueante: correção<br/>por subagente| V
+    A -.->|bloqueada: o quê| P
     SH --> R{{Revisão e merge<br/>pelo humano}}
     R --> C[Close<br/>documentação]
 ```
@@ -93,7 +94,7 @@ O agente líder escolhe o modelo, prepara a branch, registra uma **linha de base
 
 ### 4. Verify — `task-verify`
 
-O **portão**. Comprova cada critério **no app real**, depois revisa em paralelo com contextos limpos: **Spec** (faz o que foi pedido?), **Padrões** (segue as regras do repositório?), **Ataque ao diff** (só sobrevive o que for provado por execução) e **Raio de impacto** (o que quebra fora do diff). **Quem acha não julga; quem julga precisa provar.** Os achados são classificados: bloqueante volta ao Build; o que precisa do humano vai para o PR, no máximo 5 itens; o resto fica na nota.
+O **portão**. Comprova cada critério **no app real**, depois revisa em paralelo com contextos limpos: **Spec** (faz o que foi pedido?), **Padrões** (segue as regras do repositório?), **Ataque ao diff** (só sobrevive o que for provado por execução) e **Raio de impacto** (o que quebra fora do diff). **Quem acha não julga; quem julga precisa provar.** Os achados são classificados: bloqueante é corrigido ali mesmo por um subagente novo do Build (correção por subagente); o que precisa do humano vai para o PR, no máximo 5 itens; o resto fica na nota.
 
 ### 5. Ship — `task-ship`
 
