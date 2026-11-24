@@ -103,7 +103,7 @@ Mapeie as decisoes como uma arvore: cada decisao abre as decisoes que dependem d
     - **feliz:** o caminho normal;
     - **erro esperado:** entrada invalida, recusa de negocio, falta de permissao;
     - **repeticao:** clique duplo, pedido duplicado, duas requisicoes ao mesmo tempo;
-    - **limite:** zero, negativo, vazio, vencido, maximo; dado ja gravado fora do padrao (campo obrigatorio ausente, lista vazia, referencia para registro que nao existe mais), quando a regra le dado gravado;
+    - **limite:** zero, negativo, vazio, vencido, maximo; dado ja gravado fora do padrao (campo obrigatorio ausente, lista vazia, referencia para registro que nao existe mais), quando a regra le dado gravado; entrada de fora do sistema com tipo inesperado (lista, numero, texto, vazio), quando a task le arquivo editado a mao, configuracao ou payload externo. Sao dois casos distintos: um e dado nosso em formato antigo; o outro e formato que nao controlamos;
     - **acesso indevido:** usuario A lendo ou alterando dado de B.
 
     Categoria que nao se aplica: `nao se aplica - <motivo>`. Cada frase vira um teste com o mesmo titulo.
