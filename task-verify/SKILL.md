@@ -71,6 +71,8 @@ Dispare os revisores **ao mesmo tempo**, cada um em contexto limpo, com os brief
 
 **Modo completo** (escolha sozinho e registre o motivo): diff grande, ou area sensivel (autenticacao, permissao, pagamento, migracao, dados de cliente).
 
+**Copia isolada.** Revisor ou verificador que executa codigo trabalha numa copia isolada, criada do jeito que o contexto do projeto define. Nada e criado fora do workspace da task. Remova toda copia ate o fim do Verify. Se o ambiente so permitir criar fora, registre na nota onde a copia foi criada e confirme a remocao.
+
 **Sem subagente.** Se nao for possivel disparar subagente, rode cada revisor deste passo e cada verificador do passo 4 numa passagem separada, em sequencia. Cada passagem rele do zero so o brief de `referencias/revisores.md`, o diff e a nota. Nao use conclusao de passagem anterior. O verificador nao reaproveita o raciocinio de quem achou o candidato. Registre o desvio "sem subagente" na nota. No modo completo por area sensivel, acrescente aos candidatos a Atencao: "revisao sem contexto separado". A volta ao Build do passo 5 segue "Sem subagente" do `/task-build` passo 3.
 
 ## 4. Julgar

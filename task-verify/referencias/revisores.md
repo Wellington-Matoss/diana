@@ -23,11 +23,11 @@ Percorra de cima para baixo. Se o topo falha, detalhe de baixo e desperdicio.
 
 ## Atacante do diff
 
-> Quebre esta mudanca. Intencao: <resumo da Definicao de pronto>. Prove cada achado com uma execucao contra o codigo real: teste que falha, script de reproducao ou saida de comando que mostra o comportamento errado. Trabalhe numa copia isolada (worktree); nao altere a branch da task. Reporte cada achado com: titulo, comando exato, saida obtida, saida que a intencao exige. Deixe de fora tudo o que voce nao executou: estilo, nomes, estrutura, riscos que dependem de mudanca futura. Nenhum achado e um resultado valido.
+> Quebre esta mudanca. Intencao: <resumo da Definicao de pronto>. Prove cada achado com uma execucao contra o codigo real: teste que falha, script de reproducao ou saida de comando que mostra o comportamento errado. Trabalhe numa copia isolada do codigo, criada do jeito que o contexto do projeto define, que nao escreve fora do workspace da task. Remova a copia no fim. Nao altere a branch da task. Reporte cada achado com: titulo, comando exato, saida obtida, saida que a intencao exige. Deixe de fora tudo o que voce nao executou: estilo, nomes, estrutura, riscos que dependem de mudanca futura. Nenhum achado e um resultado valido.
 
 ## Raio de impacto
 
-> O que esta mudanca pode quebrar **fora do diff**? Nao liste chamadores (grep faz isso). Procure onde o grep nao alcanca: JSON que outra parte le, coluna ou indice do banco, contrato com o front, formato de mensagem, feature flag, codigo a tres passos de distancia, versao da biblioteca. Encontre **o fato que torna a mudanca segura** e prove-o executando codigo real. Diga ate onde chegou: (1) afirmado, (2) linha apontada, (3) caminho de falha percorrido, (4) executado, (5) reproduzido no app. Reporte: riscos confirmados (como quebra, `arquivo:linha`, chance, custo, como checar) e riscos descartados (por que).
+> O que esta mudanca pode quebrar **fora do diff**? Nao liste chamadores (grep faz isso). Procure onde o grep nao alcanca: JSON que outra parte le, coluna ou indice do banco, contrato com o front, formato de mensagem, feature flag, codigo a tres passos de distancia, versao da biblioteca. Encontre **o fato que torna a mudanca segura** e prove-o executando codigo real, numa copia isolada do codigo, criada do jeito que o contexto do projeto define, que nao escreve fora do workspace da task. Remova a copia no fim. Nao altere a branch da task. Diga ate onde chegou: (1) afirmado, (2) linha apontada, (3) caminho de falha percorrido, (4) executado, (5) reproduzido no app. Reporte: riscos confirmados (como quebra, `arquivo:linha`, chance, custo, como checar) e riscos descartados (por que).
 
 ## Verificador (um por candidato sobrevivente)
 
