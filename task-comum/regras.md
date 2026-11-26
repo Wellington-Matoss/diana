@@ -39,7 +39,7 @@ A unidade e a **tentativa de correcao**: uma correcao completa, conferida (ver "
 | Build   | correcao de bloqueio de ambiente (credencial, dependencia, servico local) | 2   |
 | Verify  | correcao por subagente dos bloqueantes                                | 2      |
 | Ship    | correcao por subagente depois de integrar a base                      | 1      |
-| Ship    | correcao por subagente de CI vermelho causado pelo diff ou de pedido de mudanca no PR | 3 |
+| Ship    | correcao por subagente de CI vermelho causado pelo diff, de pedido de mudanca no PR ou de changelog ausente | 3 |
 | Close   | correcao das proprias edicoes depois de erro da verificacao do vault numa nota que o Close tocou | 2 |
 
 **Modelo:** a segunda tentativa de correcao usa o modelo forte da tabela de modelo do Build (passo 2).
