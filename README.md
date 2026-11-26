@@ -167,7 +167,7 @@ stateDiagram-v2
     ativa --> em_revisao: PR aberto
     em_revisao --> concluida: merge + Close
     em_revisao --> pausada: PR fechado sem merge
-    em_revisao --> bloqueada: Close parou
+    em_revisao --> bloqueada: Ship ou Close parou
     bloqueada --> em_revisao: Close, humano resolveu
 ```
 
