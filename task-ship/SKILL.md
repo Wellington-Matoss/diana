@@ -1,6 +1,6 @@
 ---
 name: task-ship
-description: Estagio 5 (Ship) do fluxo Plan > Design > Build > Verify > Ship. De forma autonoma - confere o estado da branch, integra a base, atualiza o changelog do projeto (se houver), faz push, abre o PR no padrao do fluxo (sem merge), acompanha o CI quando o projeto tem, marca a task como em revisao e registra licoes do processo. O merge e sempre do usuario.
+description: Estagio 5 (Ship) do fluxo Plan > Design > Build > Verify > Ship. De forma autonoma - confere o estado da branch, integra a base, confere o changelog do projeto (se houver), faz push, abre o PR no padrao do fluxo (sem merge), acompanha o CI quando o projeto tem, marca a task como em revisao e registra licoes do processo. O merge e sempre do usuario.
 argument-hint: <caminho da nota da task no vault> (vazio = resolver a task ativa)
 disable-model-invocation: true
 ---
@@ -31,14 +31,14 @@ No Ship, o caso 2 aparece quando o push ou o PR exigiria acao sem volta ou em br
 
 ## Contexto do projeto
 
-Leia da memoria do agente e do `CLAUDE.md`: branch base do PR; idioma das mensagens; se ha changelog para o usuario final, onde fica, formato e regras de curadoria; se ha CI; repositorios separados.
+Leia da memoria do agente e do `CLAUDE.md`: branch base do PR; idioma das mensagens; se ha changelog para o usuario final; se ha CI; repositorios separados.
 
 ## Repositorio sem PR
 
 Se a task e de um repositorio que publica direto (contexto do projeto), o Ship encurta. A branch principal desse repositorio nao conta como protegida **so para a ferramenta de publicacao do projeto**; nunca faca commit ou push nela por outro caminho.
 
 1. **Conferir o estado** (passo 1): so os arquivos listados na Execucao estao alterados; nada de segredo.
-2. **Pular** os passos 2, 4, 5 e 6 (`skip: repositorio sem PR`). Changelog (passo 3) so se o contexto pedir.
+2. **Pular** os passos 2, 4, 5 e 6 (`skip: repositorio sem PR`). Conferir o changelog (passo 3) so se o contexto pedir.
 3. **Publicar** pela ferramenta do projeto, passando exatamente os arquivos da Execucao **e a nota da task**, com a mensagem de commit do vocabulario do projeto para o estagio `ship`. Siga a saida da ferramenta: erro de validacao, corrija e rode de novo; conflito, caso 6; recusa, caso 7.
 4. **Nota** (passo 7): `estagio: ship`; secao `## Entrega` com o commit publicado ("publicada no commit <hash>"), sem PR.
 5. **Licoes** (passo 8) igual.
@@ -50,6 +50,7 @@ Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de 
 
 - Sem argumento: resolva a task ativa como no Build.
 - A nota precisa ter `estagio: verify` concluido, sem bloqueante aberto. Senao, pare: o Verify nao aprovou.
+- Excecao: nota `em-revisao` com pedido de mudanca sem resposta no PR aberto (comentario ou revisao; o PR e a fonte; resposta: passo 6). O orquestrador chama o Ship de novo, e ele vai direto a correcao do passo 6.
 - A branch atual precisa ser a registrada na Execucao. Se nao for e der para trocar sem perder nada (sem mudanca fora de commit), troque. Senao, pare. Repositorio sem PR: nao ha branch da task; confira a branch principal.
 - Crie a lista de tarefas com os passos 1 a 8.
 
@@ -58,7 +59,7 @@ Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de 
 1. Branch atual nao e protegida.
 2. `git status` limpo: nada fora dos commits da task.
 3. O diff (`git diff <base>...HEAD`) so tem arquivos da task. Arquivo nao relacionado: remova do diff com um commit `chore: remove alteracao fora do escopo` e registre.
-4. Todo commit da task tem o rodape `Task: <ID>` (`referencias/commits.md`). Commit local sem rodape: corrija a mensagem antes do push. Commit ja enviado sem rodape: nao reescreva o historico; registre o hash na nota.
+4. Todo commit da task tem o rodape `Task: <ID>` ("Conferencia do rodape" de `referencias/commits.md`). Commit local sem rodape: corrija a mensagem antes do push. Commit ja enviado sem rodape: nao reescreva o historico; registre o hash na nota.
 5. Procure segredos no diff: `.env`, chave, token, certificado, senha, dado pessoal. Encontrou: caso 5.
 
 ## 2. Integrar a base
@@ -68,13 +69,9 @@ Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de 
 3. Conflito **mecanico** (lockfile, import, formatacao, arquivos independentes): resolva. Conflito na **logica** da task: caso 6.
 4. Houve merge da base: rode de novo testes, lint e build. Vermelho: "Correcao por subagente" de `../task-comum/regras.md`, com o erro. Limite: tabela do mesmo arquivo; persistindo, caso 4.
 
-## 3. Changelog do projeto (se houver)
+## 3. Conferir o changelog (se houver)
 
-Se o contexto do projeto define um changelog para o usuario final:
-
-- Uma linha, em linguagem do usuario final: o que ele percebe de diferente. Nada de detalhe tecnico.
-- Use o formato, as secoes e as regras de curadoria do projeto (ex.: o que entra so no changelog interno).
-- Commit: `docs(changelog): <assunto>`.
+So confira: o bullet da etapa do changelog (`/task-design`, passo 6) entrou no diff, ou ha `skip` com motivo. Faltou: "Correcao por subagente" de `../task-comum/regras.md`.
 
 Sem changelog no projeto: `skip: projeto sem changelog`.
 
@@ -96,7 +93,7 @@ Projeto sem CI: `skip: projeto sem CI`.
 
 1. Espere os checks terminarem (`gh pr checks <pr> --watch`).
 2. Verde: siga.
-3. Falha **causada pelo diff**: leia o primeiro erro acionavel no log e aplique "Correcao por subagente" de `../task-comum/regras.md`, com o erro (inclui o ataque a correcao antes do push). Push e espere de novo. Limite: tabela do mesmo arquivo; depois, caso 4.
+3. Falha **causada pelo diff** ou pedido de mudanca do PR (passo 0): leia o primeiro erro acionavel no log, ou o pedido, e aplique "Correcao por subagente" de `../task-comum/regras.md`, com o erro (inclui o ataque a correcao antes do push). No pedido, rode tambem o passo 1 sobre o commit novo antes do push. Push e espere de novo. No pedido, responda no PR com o commit da correcao: pedido respondido assim esta tratado, e a proxima chamada so trata pedido sem resposta. Pedido que muda o QUE (Contrato, escopo, produto): caso 1. Limite: tabela do mesmo arquivo; depois, caso 4.
 4. Falha **nao causada pelo diff** (instabilidade, infraestrutura, falha que ja existe na base): siga a nota "CI vermelho nao causado pelo diff" de `../task-comum/regras.md`. Persistindo, comente no PR com a evidencia.
 5. Nunca mude o esperado de um teste para o CI passar.
 

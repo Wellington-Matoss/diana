@@ -55,7 +55,7 @@ Curto. O problema ja existe; o subagente so corrige.
 Voce corrige um problema da task <ID> - <nome curto>.
 
 ## Problema (objetivo)
-<achado CONFIRMADO do Verify, com a prova | primeiro erro acionavel do CI | saida vermelha de teste, lint ou build depois de integrar a base>
+<achado CONFIRMADO do Verify, com a prova | primeiro erro acionavel do CI | saida vermelha de teste, lint ou build depois de integrar a base | pedido de mudanca do PR, com o link>
 
 ## Fontes
 - Nota da task: <caminho>. Leia: Definicao de pronto, Contrato, Design.
@@ -70,11 +70,12 @@ Voce corrige um problema da task <ID> - <nome curto>.
 ## O que fazer
 1. Problema de comportamento: escreva antes um **teste de regressao** e veja falhar pelo motivo certo. Titulo: a frase da Definicao de pronto que o problema quebra + " - regressao". Sem frase que cubra o problema: o titulo descreve o achado. Registre o teste como desvio no relatorio.
 2. Faca a correcao minima e veja a suite verde.
-3. Commit local `tipo(escopo): assunto` com rodape `Task: <ID>`.
+3. Commit local `tipo(escopo): assunto` com rodape `Task: <ID>` (ver `task-ship/referencias/commits.md`).
 
 ## Nao faca
 - Nao mude item do Contrato nem teste do plano (esperado, assercao, skip). Se a correcao exigir: pare e reporte (caso 1).
 - Nao corrija nada fora do problema.
+- Nao deixe comentario fora da "Lista fechada do que fica" de <caminho>/referencias/limpeza.md.
 
 ## Pare e reporte se
 - ocorrer um dos casos 1, 2 ou 3 de "Quando parar" nas regras comuns;

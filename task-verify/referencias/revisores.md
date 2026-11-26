@@ -13,7 +13,7 @@ Percorra de cima para baixo. Se o topo falha, detalhe de baixo e desperdicio.
 
 ## Revisor de Spec
 
-> Compare o diff com a nota da task (Definicao de pronto, Contrato, Decisoes, Fora do escopo, Design). Reporte: (a) frase ausente ou parcial; (b) comportamento no diff que nao foi pedido (escopo a mais); (c) frase que parece implementada mas esta errada; (d) **item do Contrato violado** (rota, formato, status, campo gravado, permissao, log diferente do que esta escrito); (e) frase sem teste com o mesmo titulo, sem desvio registrado. Cite a frase ou o item `Cn` em cada achado. Ate 6 candidatos, mesmo incertos, com nivel [Alto]/[Medio]. Ate 400 palavras.
+> Compare o diff com a nota da task (Definicao de pronto, Contrato, Decisoes, Fora do escopo, Design). Reporte: (a) frase ausente ou parcial; (b) comportamento no diff que nao foi pedido (escopo a mais); (c) frase que parece implementada mas esta errada; (d) **item do Contrato violado** (rota, formato, status, campo gravado, permissao, log diferente do que esta escrito); (e) frase sem teste com o mesmo titulo, sem desvio registrado; (f) bullet da etapa do changelog ausente ou errado. Cite a frase ou o item `Cn` em cada achado. Ate 6 candidatos, mesmo incertos, com nivel [Alto]/[Medio]. Ate 400 palavras.
 
 ## Revisor de Padroes
 

@@ -26,7 +26,8 @@ So fica o comentario que cabe num destes casos:
 1. licenca;
 2. restricao de dependencia externa que nao controlamos (fornecedor, plataforma, protocolo, firmware), com link quando houver;
 3. documentacao de contrato de API publica;
-4. link para issue que explica uma restricao que o codigo nao consegue expressar.
+4. link para issue que explica uma restricao que o codigo nao consegue expressar;
+5. comentario que o contexto do projeto exige (convencao documentada do repositorio).
 
 Todo o resto sai: narracao, comentario que repete o codigo, regra de negocio, justificativa de contorno, codigo comentado, banner e separador. **Na duvida, sai.**
 

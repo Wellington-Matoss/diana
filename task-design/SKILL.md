@@ -18,7 +18,7 @@ Nota (plan concluido) -> 1 Ler -> 2 Prototipar -> 3 Nomear -> 4 Dar forma -> 5 P
 ## Principios
 
 - **O Plan decidiu O QUE. O Design decide COMO.** Se o Design mostrar que o Plan esta errado (criterio impossivel, escopo grande demais, pergunta de produto que ninguem decidiu), pare e volte ao `/task-plan`. Nao corrija o Plan em silencio.
-- **O Contrato e fixo.** A forma do codigo pode ser qualquer uma que cumpra o Contrato e as frases. Se a melhor forma exige mudar um item do Contrato, isso e mudar o QUE: volte ao `/task-plan`.
+- **O Contrato e fixo.** A forma do codigo pode ser qualquer uma que cumpra o Contrato e as frases. Mudar um item do Contrato e mudar o QUE: so com o OK do humano, na propria nota. Marque o item `(alterado em AAAA-MM-DD no Design, aprovado por <humano>)`, atualize as frases e o Plano de testes que dependem dele e siga as regras do Contrato do passo 5 do `/task-plan` e, se o item tira ou muda um campo, "Consumidores do campo" do passo 3.
 - **Os fatos sao seus. As decisoes sao do usuario.** Mesma regra do Plan.
 - **Nao escreva codigo de producao.** Prototipo e codigo descartavel, em branch descartavel. Trecho curto de tipo ou assinatura na nota e permitido quando descreve a decisao melhor que texto.
 - **Siga o precedente.** Se o projeto ja resolve algo parecido, use o mesmo padrao, a menos que haja motivo registrado para nao usar.
@@ -109,10 +109,11 @@ Leia `referencias/vocabulario.md`.
 
 - **No maximo 7 etapas de trabalho.** Se precisar de mais, a task e grande demais: volte ao `/task-plan` e divida em epico.
 - Ordem:
-  1. remocao de codigo morto e refatoracao previa ("torne a mudanca facil, depois faca a mudanca facil");
+  1. remocao de codigo morto e refatoracao previa ("torne a mudanca facil, depois faca a mudanca facil"). No fix: a refatoracao previa (se houver, com a suite verde), depois o teste de reproducao (vermelho de proposito), depois a correcao. Na refatoracao, a etapa 1 e a trava (tabela do passo 5);
   2. a parte de maior risco ou incerteza;
   3. o resto.
 - Cada etapa diz: **o que muda**, **onde** (modulos), **qual teste fica verde** ao fim dela.
+- **Changelog:** se o tipo da mudanca entra no changelog do projeto (contexto do projeto), a ultima etapa e o bullet, sem teste: uma linha para o usuario final, no formato do projeto, commit `docs(changelog): <assunto>`. A etapa diz: conferencia no Verify.
 - Cada etapa termina com a suite verde (excecao: o commit do teste de reproducao no fix, ver "Por tipo" do /task-build). Teste, lint e build nao sao etapas separadas: fazem parte de cada etapa.
 - Etapa bem escrita e uma instrucao clara para o subagente do Build.
 

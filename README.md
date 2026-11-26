@@ -103,7 +103,7 @@ O **portão**. Comprova cada critério **no app real**, depois revisa em paralel
 
 ### 5. Ship — `task-ship`
 
-Integra a base, atualiza o changelog do projeto (se houver), faz push e abre o PR no padrão do fluxo, acompanha o CI e registra **lições do processo**, só quando algo aconteceu. **Nunca faz merge.**
+Integra a base, confere o changelog do projeto (se houver), faz push e abre o PR no padrão do fluxo, acompanha o CI e registra **lições do processo**, só quando algo aconteceu. **Nunca faz merge.**
 
 ### Close — `task-close`
 
@@ -149,7 +149,7 @@ Cada task é **uma nota** (Markdown, pensada para Obsidian) que atravessa todos 
 ### Definição de pronto, Contrato e Registro
 
 - **Definição de pronto:** frases `quando …, então …` em cinco categorias: **feliz**, **erro esperado**, **repetição** (clique duplo, requisições simultâneas), **limite** (zero, vazio, vencido, máximo, dado já gravado fora do padrão, entrada externa com tipo inesperado) e **acesso indevido** (usuário A vendo ou alterando dado de B). Categoria sem uso leva `não se aplica - motivo`. Cada frase vira um teste com o mesmo título.
-- **Contrato (`C1`, `C2`…):** o que outra parte do sistema, o banco ou o usuário enxerga e fica fixo: rota, formato, status, campo gravado, permissão, log. **Fora do Contrato, tudo é sugestão** e o agente decide sozinho; mudar o Contrato é mudar o *o quê*, e o agente para.
+- **Contrato (`C1`, `C2`…):** o que outra parte do sistema, o banco ou o usuário enxerga e fica fixo: rota, formato, status, campo gravado, permissão, log. **Fora do Contrato, tudo é sugestão** e o agente decide sozinho; mudar o Contrato é mudar o *o quê*: só o humano aprova, no Design; depois dele, o agente para.
 - **Um lugar por fato:** regra ou valor por extenso só no Contrato; o resto da nota cita `ver C3`.
 - **Prova com dado real:** quando a task mexe em regra sobre dado que já existe, a premissa é testada contra o dado antes da entrevista, só em leitura e só com número agregado.
 - **Registro de etapas:** uma linha por estágio, em formato fixo (`build: concluido em … · modelo … · rodadas N · desvios N · …`), para medir o fluxo por script (ver [Métricas](#métricas)). O Close escreve a última linha, `close`, com a data do merge e os débitos criados e removidos.
@@ -167,7 +167,7 @@ stateDiagram-v2
     ativa --> em_revisao: PR aberto
     em_revisao --> concluida: merge + Close
     em_revisao --> pausada: PR fechado sem merge
-    em_revisao --> bloqueada: Close parou
+    em_revisao --> bloqueada: Ship ou Close parou
     bloqueada --> em_revisao: Close, humano resolveu
 ```
 
