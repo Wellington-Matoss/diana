@@ -18,7 +18,7 @@ Nota (plan concluido) -> 1 Ler -> 2 Prototipar -> 3 Nomear -> 4 Dar forma -> 5 P
 ## Principios
 
 - **O Plan decidiu O QUE. O Design decide COMO.** Se o Design mostrar que o Plan esta errado (criterio impossivel, escopo grande demais, pergunta de produto que ninguem decidiu), pare e volte ao `/task-plan`. Nao corrija o Plan em silencio.
-- **O Contrato e fixo.** A forma do codigo pode ser qualquer uma que cumpra o Contrato e as frases. Se a melhor forma exige mudar um item do Contrato, isso e mudar o QUE: volte ao `/task-plan`.
+- **O Contrato e fixo.** A forma do codigo pode ser qualquer uma que cumpra o Contrato e as frases. Mudar um item do Contrato e mudar o QUE: so com o OK do humano, na propria nota. Marque o item `(alterado em AAAA-MM-DD no Design, aprovado por <humano>)`, atualize as frases e o Plano de testes que dependem dele e siga o passo 5 do `/task-plan`, inclusive "Consumidores do campo".
 - **Os fatos sao seus. As decisoes sao do usuario.** Mesma regra do Plan.
 - **Nao escreva codigo de producao.** Prototipo e codigo descartavel, em branch descartavel. Trecho curto de tipo ou assinatura na nota e permitido quando descreve a decisao melhor que texto.
 - **Siga o precedente.** Se o projeto ja resolve algo parecido, use o mesmo padrao, a menos que haja motivo registrado para nao usar.
