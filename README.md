@@ -103,7 +103,7 @@ O **portão**. Comprova cada critério **no app real**, depois revisa em paralel
 
 ### 5. Ship — `task-ship`
 
-Integra a base, atualiza o changelog do projeto (se houver), faz push e abre o PR no padrão do fluxo, acompanha o CI e registra **lições do processo**, só quando algo aconteceu. **Nunca faz merge.**
+Integra a base, confere o changelog do projeto (se houver), faz push e abre o PR no padrão do fluxo, acompanha o CI e registra **lições do processo**, só quando algo aconteceu. **Nunca faz merge.**
 
 ### Close — `task-close`
 

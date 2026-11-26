@@ -113,6 +113,7 @@ Leia `referencias/vocabulario.md`.
   2. a parte de maior risco ou incerteza;
   3. o resto.
 - Cada etapa diz: **o que muda**, **onde** (modulos), **qual teste fica verde** ao fim dela.
+- **Changelog:** se o tipo da mudanca entra no changelog do projeto (contexto do projeto), a ultima etapa e o bullet, sem teste: uma linha para o usuario final, no formato do projeto, commit `docs(changelog): <assunto>`. A etapa diz: conferencia no Verify.
 - Cada etapa termina com a suite verde (excecao: o commit do teste de reproducao no fix, ver "Por tipo" do /task-build). Teste, lint e build nao sao etapas separadas: fazem parte de cada etapa.
 - Etapa bem escrita e uma instrucao clara para o subagente do Build.
 
