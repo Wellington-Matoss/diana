@@ -109,7 +109,7 @@ Leia `referencias/vocabulario.md`.
 
 - **No maximo 7 etapas de trabalho.** Se precisar de mais, a task e grande demais: volte ao `/task-plan` e divida em epico.
 - Ordem:
-  1. remocao de codigo morto e refatoracao previa ("torne a mudanca facil, depois faca a mudanca facil");
+  1. remocao de codigo morto e refatoracao previa ("torne a mudanca facil, depois faca a mudanca facil"). No fix, a etapa 1 e o teste de reproducao; na refatoracao, a trava (tabela do passo 5);
   2. a parte de maior risco ou incerteza;
   3. o resto.
 - Cada etapa diz: **o que muda**, **onde** (modulos), **qual teste fica verde** ao fim dela.
