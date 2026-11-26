@@ -95,7 +95,7 @@ Nao aceite o relatorio sem conferir:
    - [ ] existe o commit da etapa;
    - [ ] o commit tem o rodape `Task: <ID>` ("Conferencia do rodape" do `commits.md` do Ship). Commit sem rodape: corrija antes do push (no Build os commits ainda sao locais);
    - [ ] os testes planejados para a etapa existem e testam o criterio (nao detalhe interno);
-   - [ ] o relatorio mostra o vermelho **pelo motivo certo** antes do verde;
+   - [ ] o relatorio mostra o vermelho **pelo motivo certo** antes do verde. Teste de frase da Definicao de pronto que nasce verde: reprovado ("verde de inicio" so vale para nao regressao, `referencias/tdd.md`);
    - [ ] arquivos alterados estao dentro do que a etapa previa (ou o desvio esta registrado);
    - [ ] nenhum item do Contrato mudou (rota, formato, status, campo gravado, permissao, log);
    - [ ] se a etapa le dado ja gravado, a Definicao de pronto tem frase para dado fora do padrao (categoria limite do Plan). Senao, o codigo nao decide o comportamento e o caso vai aos candidatos a Atencao: "dado gravado fora do padrao sem frase na Definicao de pronto".
