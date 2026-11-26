@@ -75,6 +75,7 @@ Voce corrige um problema da task <ID> - <nome curto>.
 ## Nao faca
 - Nao mude item do Contrato nem teste do plano (esperado, assercao, skip). Se a correcao exigir: pare e reporte (caso 1).
 - Nao corrija nada fora do problema.
+- Nao deixe comentario fora da "Lista fechada do que fica" de <caminho>/referencias/limpeza.md.
 
 ## Pare e reporte se
 - ocorrer um dos casos 1, 2 ou 3 de "Quando parar" nas regras comuns;
