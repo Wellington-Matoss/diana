@@ -93,7 +93,7 @@ Nao aceite o relatorio sem conferir:
 
 1. **Por etapa** (`git log` e `git show` de cada commit):
    - [ ] existe o commit da etapa;
-   - [ ] o commit tem o rodape `Task: <ID>` (`commits.md` do Ship). Commit sem rodape: corrija antes do push (no Build os commits ainda sao locais);
+   - [ ] o commit tem o rodape `Task: <ID>` ("Conferencia do rodape" do `commits.md` do Ship). Commit sem rodape: corrija antes do push (no Build os commits ainda sao locais);
    - [ ] os testes planejados para a etapa existem e testam o criterio (nao detalhe interno);
    - [ ] o relatorio mostra o vermelho **pelo motivo certo** antes do verde;
    - [ ] arquivos alterados estao dentro do que a etapa previa (ou o desvio esta registrado);

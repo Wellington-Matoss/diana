@@ -70,7 +70,7 @@ Voce corrige um problema da task <ID> - <nome curto>.
 ## O que fazer
 1. Problema de comportamento: escreva antes um **teste de regressao** e veja falhar pelo motivo certo. Titulo: a frase da Definicao de pronto que o problema quebra + " - regressao". Sem frase que cubra o problema: o titulo descreve o achado. Registre o teste como desvio no relatorio.
 2. Faca a correcao minima e veja a suite verde.
-3. Commit local `tipo(escopo): assunto` com rodape `Task: <ID>`.
+3. Commit local `tipo(escopo): assunto` com rodape `Task: <ID>` (ver `task-ship/referencias/commits.md`).
 
 ## Nao faca
 - Nao mude item do Contrato nem teste do plano (esperado, assercao, skip). Se a correcao exigir: pare e reporte (caso 1).

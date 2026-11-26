@@ -16,7 +16,9 @@ Task: <ID>
 - **escopo:** o modulo ou a area do dominio (`alertas`, `auth`, `sensores`). Use os termos do glossario. Omita se a mudanca for transversal.
 - **assunto:** verbo no imperativo, minusculo, sem ponto final, ate ~60 caracteres. Diz o que muda no comportamento, nao em qual arquivo. Bom: `dispara alerta no valor igual ao limite`. Ruim: `ajusta alertas.js`.
 - **corpo:** so quando o porque nao e obvio. Em commit de correcao de bug, escreva a causa confirmada.
-- **rodape:** `Task: <ID>`. Mudanca que quebra compatibilidade: `BREAKING CHANGE: <o que quebra e como migrar>`.
+- **rodape:** `Task: <ID>`. Mudanca que quebra compatibilidade: `BREAKING CHANGE: <o que quebra e como migrar>`. `Task: <ID>` fica no ultimo paragrafo, em linhas seguidas com os outros trailers (co-autoria, `BREAKING CHANGE`): o git so le como trailer o ultimo paragrafo (exemplo: o commit `fix` abaixo).
+
+**Conferencia do rodape:** `git log --format='%h %(trailers:key=Task,valueonly)' <base>..HEAD` mostra o ID em todos os commits do intervalo. `grep` nao vale.
 
 ## Tipos
 
@@ -38,14 +40,15 @@ Cada etapa do Build gera um commit nesse formato. Exemplo de um fix:
 ```
 test(alertas): reproduz alerta ausente no valor igual ao limite
 
-Task: PLX-031
+Task: <ID>
 ```
 ```
 fix(alertas): dispara alerta no valor igual ao limite
 
 Causa: a comparacao usava ">" em vez de ">=".
 
-Task: PLX-031
+Task: <ID>
+Co-Authored-By: <nome> <email>
 ```
 
 ## Titulo do PR
