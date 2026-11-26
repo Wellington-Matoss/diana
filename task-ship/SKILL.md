@@ -50,6 +50,7 @@ Toda parada deste passo e o caso 0 de `../task-comum/regras.md`, com a linha de 
 
 - Sem argumento: resolva a task ativa como no Build.
 - A nota precisa ter `estagio: verify` concluido, sem bloqueante aberto. Senao, pare: o Verify nao aprovou.
+- Excecao: nota `em-revisao` com pedido de mudanca nao resolvido no PR aberto (comentario ou revisao; o PR e a fonte). O orquestrador chama o Ship de novo, e ele vai direto a correcao do passo 6. Pedido que muda o QUE: caso 1.
 - A branch atual precisa ser a registrada na Execucao. Se nao for e der para trocar sem perder nada (sem mudanca fora de commit), troque. Senao, pare. Repositorio sem PR: nao ha branch da task; confira a branch principal.
 - Crie a lista de tarefas com os passos 1 a 8.
 
@@ -96,7 +97,7 @@ Projeto sem CI: `skip: projeto sem CI`.
 
 1. Espere os checks terminarem (`gh pr checks <pr> --watch`).
 2. Verde: siga.
-3. Falha **causada pelo diff**: leia o primeiro erro acionavel no log e aplique "Correcao por subagente" de `../task-comum/regras.md`, com o erro (inclui o ataque a correcao antes do push). Push e espere de novo. Limite: tabela do mesmo arquivo; depois, caso 4.
+3. Falha **causada pelo diff** ou pedido de mudanca do PR (passo 0): leia o primeiro erro acionavel no log, ou o pedido, e aplique "Correcao por subagente" de `../task-comum/regras.md`, com o erro (inclui o ataque a correcao antes do push). Push e espere de novo. Limite: tabela do mesmo arquivo; depois, caso 4.
 4. Falha **nao causada pelo diff** (instabilidade, infraestrutura, falha que ja existe na base): siga a nota "CI vermelho nao causado pelo diff" de `../task-comum/regras.md`. Persistindo, comente no PR com a evidencia.
 5. Nunca mude o esperado de um teste para o CI passar.
 

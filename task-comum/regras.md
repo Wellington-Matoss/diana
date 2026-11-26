@@ -39,7 +39,7 @@ A unidade e a **tentativa de correcao**: uma correcao completa, conferida (ver "
 | Build   | correcao de bloqueio de ambiente (credencial, dependencia, servico local) | 2   |
 | Verify  | correcao por subagente dos bloqueantes                                | 2      |
 | Ship    | correcao por subagente depois de integrar a base                      | 1      |
-| Ship    | correcao por subagente de CI vermelho causado pelo diff               | 3      |
+| Ship    | correcao por subagente de CI vermelho causado pelo diff ou de pedido de mudanca no PR | 3 |
 | Close   | correcao das proprias edicoes depois de erro da verificacao do vault numa nota que o Close tocou | 2 |
 
 **Modelo:** a segunda tentativa de correcao usa o modelo forte da tabela de modelo do Build (passo 2).
@@ -99,7 +99,7 @@ Regras da retomada:
 
 ## Correcao por subagente
 
-Problema de **como** (bloqueante do Verify, vermelho depois de integrar a base, CI vermelho pelo diff) nao volta ao estagio anterior. O estagio que achou o problema corrige ali mesmo:
+Problema de **como** (bloqueante do Verify, vermelho depois de integrar a base, CI vermelho pelo diff, pedido de mudanca no PR aberto) nao volta ao estagio anterior. O estagio que achou o problema corrige ali mesmo:
 
 1. Dispare um **subagente novo** com o brief do Build no **modo correcao** (`../task-build/templates/brief-subagente.md`). Nao continue um subagente anterior.
 2. Confira a correcao como no passo 4 do Build: testes do plano intactos; rode de novo testes, lint e build e compare com a linha de base. Registre o teste de regressao do relatorio na secao "Desvios" do Design (titulo: modo correcao do brief).

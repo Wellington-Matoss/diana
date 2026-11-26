@@ -55,7 +55,7 @@ Curto. O problema ja existe; o subagente so corrige.
 Voce corrige um problema da task <ID> - <nome curto>.
 
 ## Problema (objetivo)
-<achado CONFIRMADO do Verify, com a prova | primeiro erro acionavel do CI | saida vermelha de teste, lint ou build depois de integrar a base>
+<achado CONFIRMADO do Verify, com a prova | primeiro erro acionavel do CI | saida vermelha de teste, lint ou build depois de integrar a base | pedido de mudanca do PR, com o link>
 
 ## Fontes
 - Nota da task: <caminho>. Leia: Definicao de pronto, Contrato, Design.
