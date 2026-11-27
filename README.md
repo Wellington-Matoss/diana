@@ -249,6 +249,7 @@ Checklist do contexto que as skills leem (memória do agente ou `CLAUDE.md`):
 - [ ] **CI:** existe? quais checks?
 - [ ] **Idioma** de commits e PRs
 - [ ] **Desenhos:** pasta para diagramas (opcional)
+- [ ] **Mapa do épico (opcional):** como desenhar as ondas e o caminho crítico (página, diagrama, view do vault) e como ver as fatias livres
 
 ---
 
